@@ -14,7 +14,7 @@ export default class InitDatabase {
             qnaId INTEGER PRIMARY KEY,
             orgId INTEGER NOT NULL,
             question TEXT NOT NULL,
-            answer INTEGER NOT NULL,
+            answer INTEGER,
             createdAt TEXT NOT NULL,
             updatedAt TEXT NOT NULL
         );
