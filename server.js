@@ -9,11 +9,13 @@ import {
 } from './utils/indexing.js';
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 import { s3, saveDataToS3, loadDataFromS3 } from './utils/persistent.js';
 import InitDatabase from './models/initDB.model.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
+app.use(cors());
 app.use(express.json());
 
 // ------------------------------------------------------------------------------------------- //
@@ -98,6 +100,7 @@ app.post('/api/embed', async (req, res) => {
 app.post('/api/json', async (req, res) => {
   // Grab the parameters
   const jsonData = req.body;
+
   if (!jsonData) {
     res.status(400).send({ error: 'Missing jsonData parameter' });
     return;
@@ -127,11 +130,11 @@ app.post('/api/json', async (req, res) => {
 // ------------------------------------------------------------------------------------- //
 // ** SINGLE OBJ ACTION **: FETCH EMBEDDING MATCHES FROM SPECIFIC indexName VECTOR STORE //
 // ------------------------------------------------------------------------------------- //
-// Get Matched Filler
-app.get('/api/match', async (req, res) => {
+// Post Matched Filler
+app.post('/api/match', async (req, res) => {
   // Grab the parameters
-  const { question, indexName, neighbors } = req.query;
-  console.log(question, indexName, neighbors);
+  const { sentence, indexName, neighbors } = req.body;
+  console.log(sentence, indexName, neighbors);
 
   // Check to make sure indexName is present
   if (!indexName) {
@@ -143,7 +146,7 @@ app.get('/api/match', async (req, res) => {
   const nearestNeighbors = parseInt(neighbors) || NN;
   const is_existing_index = await checkFileExists(indexingPath);
 
-  if (!question) {
+  if (!sentence) {
     res.status(400).send({ error: 'Missing sentence parameter' });
     return;
   }
@@ -155,7 +158,7 @@ app.get('/api/match', async (req, res) => {
   const result = await returnMatchedFiller(
     indexingPath,
     model,
-    question,
+    sentence,
     nearestNeighbors,
     DEBUG
   );
