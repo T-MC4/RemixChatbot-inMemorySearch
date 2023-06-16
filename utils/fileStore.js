@@ -10,6 +10,10 @@ import {
   getFilesInDirectory,
   deleteFromLocal,
 } from "./fileHelper.js";
+import path from "path";
+import fs from "fs/promises";
+import crypto from "crypto";
+import { Readable } from "stream";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -20,12 +24,21 @@ const fileStoreBucketName =
 // Create S3 client
 const fileStore = new S3Client({
   endpoint: `https://${process.env.AWS_ACCOUNT_ID_FILE_STORE}.r2.cloudflarestorage.com`,
-  region: `${process.env.region}`,
+  region: "auto",
   credentials: {
     accessKeyId: `${process.env.AWS_ACCOUNT_ACCESS_KEY_ID_FILE_STORE}`,
     secretAccessKey: `${process.env.AWS_ACCOUNT_ACCESS_KEY_SECRET_FILE_STORE}`,
   },
 });
+
+// Helper function to convert a stream to a Buffer
+async function streamToBuffer(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
 
 // Function to upload a file to S3
 const uploadToS3 = async (file, s3FilePath) => {
@@ -56,7 +69,8 @@ const getFilesInS3Bucket = async (s3Path, fileList = []) => {
   const s3FilesResponse = await fileStore.send(
     new ListObjectsV2Command(listParams)
   );
-  for (const file of s3FilesResponse.Contents) {
+  const s3FilesContents = s3FilesResponse?.Contents || [];
+  for (const file of s3FilesContents) {
     const filePath = file.Key;
     if (filePath.endsWith("/")) {
       fileList = await getFilesInS3Bucket(filePath, fileList);
@@ -79,7 +93,7 @@ const downloadFromS3 = async (s3FilePath, localFilePath) => {
 
 // Compare local files to S3 and sync
 export const saveDataToS3 = async (localPath, s3Path) => {
-  if (!s3) {
+  if (!fileStore) {
     console.log("[saveDataToS3] s3 is not defined");
     return;
   }
@@ -94,9 +108,10 @@ export const saveDataToS3 = async (localPath, s3Path) => {
     Prefix: s3Path,
   };
   const s3FilesResponse = await fileStore.send(
-    new listObjectsV2Command(listObjectsParams)
+    new ListObjectsV2Command(listObjectsParams)
   );
-  const s3Files = s3FilesResponse.Contents.map((file) => file.Key);
+  const s3FilesContents = s3FilesResponse?.Contents || [];
+  const s3Files = s3FilesContents.map((file) => file.Key);
   console.log("\nThese are the s3Files to compare against: ", s3Files);
 
   console.log(
@@ -130,13 +145,13 @@ export const saveDataToS3 = async (localPath, s3Path) => {
         Key: s3FilePath,
       };
       const s3FileResponse = await fileStore.send(
-        new getObjectCommand(getObjectParams)
+        new GetObjectCommand(getObjectParams)
       );
-
+      const s3FileData = await streamToBuffer(s3FileResponse.Body);
       // Get the file content's hash values
       const s3FileHash = crypto
         .createHash("sha256")
-        .update(s3FileResponse.Body)
+        .update(s3FileData)
         .digest("hex");
       const localFileHash = await calculateFileHash(file);
 
@@ -177,7 +192,7 @@ export const saveDataToS3 = async (localPath, s3Path) => {
 
 // Function to load files from S3 to local/server
 export const loadDataFromS3 = async (s3Path, localPath) => {
-  if (!s3) {
+  if (!fileStore) {
     console.log("[loadDataFromS3] s3 is not defined");
     return;
   }
@@ -216,12 +231,14 @@ export const loadDataFromS3 = async (s3Path, localPath) => {
         Key: file,
       };
       const s3FileResponse = await fileStore.send(
-        new getObjectCommand(getObjectParams)
+        new GetObjectCommand(getObjectParams)
       );
       const localFileHash = await calculateFileHash(localFilePath);
+
+      const s3FileData = await streamToBuffer(s3FileResponse.Body);
       const s3FileHash = crypto
         .createHash("sha256")
-        .update(s3FileResponse.Body)
+        .update(s3FileData)
         .digest("hex");
 
       if (localFileHash !== s3FileHash) {
