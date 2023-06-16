@@ -79,7 +79,7 @@ const downloadFromS3 = async (s3FilePath, localFilePath) => {
 
 // Compare local files to S3 and sync
 export const saveDataToS3 = async (localPath, s3Path) => {
-  if (!s3) {
+  if (!fileStore) {
     console.log("[saveDataToS3] s3 is not defined");
     return;
   }
@@ -177,7 +177,7 @@ export const saveDataToS3 = async (localPath, s3Path) => {
 
 // Function to load files from S3 to local/server
 export const loadDataFromS3 = async (s3Path, localPath) => {
-  if (!s3) {
+  if (!fileStore) {
     console.log("[loadDataFromS3] s3 is not defined");
     return;
   }
