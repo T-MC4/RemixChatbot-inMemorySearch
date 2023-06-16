@@ -1,3 +1,5 @@
+@base_url = http://localhost:3000
+
 POST http://localhost:3000/search/update 
 
 ###
@@ -58,3 +60,42 @@ Content-Type: application/json
 #     "indexName":20,
 #     "sentence":"Where is my Key?"
 # }
+
+
+### Get Session List
+GET {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1
+
+### Get Session Data
+GET {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/cbb0e2d0-925b-4027-8344-a1b9a3a421b1
+
+### Save Session
+POST {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1
+Content-Type: application/json
+
+{
+  "data": {
+    "example": "data"
+  },
+  "sessionName": "Example Session"
+}
+
+### Update Session Data
+PUT {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/cbb0e2d0-925b-4027-8344-a1b9a3a421b1
+Content-Type: application/json
+
+{
+  "data": {
+    "updated": "data"
+  }
+}
+
+### Update Session Name
+PUT {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/cbb0e2d0-925b-4027-8344-a1b9a3a421b1/name
+Content-Type: application/json
+
+{
+  "sessionName": "Name Updated"
+}
+
+### Delete Session
+DELETE {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/1cb7925a-e3da-4887-9049-1c08333c5ef1

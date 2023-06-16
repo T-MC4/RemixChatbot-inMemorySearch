@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
+  CopyObjectCommand,
 } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
@@ -100,24 +101,22 @@ export async function updateSessionName(userId, sessionId, sessionName) {
       throw new Error("Session not found.");
     }
 
-    // Remove old session name file
-    const oldSessionKey = `${userId}/${oldSessionName}_${sessionId}.json`;
+    const oldSessionKey = `${userId}/${oldSessionName.sessionName}_${sessionId}.json`;
+    const newSessionKey = `${userId}/${sessionName}_${sessionId}.json`;
+    // Copy the file with the new name to the destination
+    const copyParams = {
+      Bucket: setStoreBucketName,
+      CopySource: `${setStoreBucketName}/${oldSessionKey}`,
+      Key: newSessionKey,
+    };
+    await setStore.send(new CopyObjectCommand(copyParams));
+
+    // Delete the original file
     const deleteParams = {
       Bucket: setStoreBucketName,
       Key: oldSessionKey,
     };
     await setStore.send(new DeleteObjectCommand(deleteParams));
-
-    // Update session name
-    const jsonContent = JSON.stringify(sessionData.data);
-    const newSessionKey = `${userId}/${sessionName}_${sessionId}.json`;
-    const updateParams = {
-      Bucket: setStoreBucketName,
-      Key: newSessionKey,
-      Body: jsonContent,
-      ContentType: "application/json",
-    };
-    await setStore.send(new PutObjectCommand(updateParams));
 
     return {
       success: true,
