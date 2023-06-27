@@ -144,6 +144,9 @@ export async function deleteChat(userId, chatId) {
         -- Query to delete a chat
         DELETE FROM ChatList
         WHERE userId = '${userId}' AND chatId = '${chatId}';
+        -- Query to delete a chat data
+        DELETE FROM ChatData
+        WHERE userId = '${userId}' AND chatId = '${chatId}';
       `,
     });
 
