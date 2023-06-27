@@ -13,6 +13,7 @@ import cors from "cors";
 import { saveDataToS3, loadDataFromS3 } from "./utils/fileStore.js";
 import InitDatabase from "./models/initDB.model.js";
 import sessionRoutes from "./routes/session.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,6 +34,7 @@ const NN = 1; // the number of nearest neighbors to search.
 let model;
 
 app.use("/api/session", sessionRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ------------------------------------------------------------------------------------------- //
 // ** BULK ACTION **: EMBEDD FILES IN THE 'to_process' FOLDER THAT PERTAIN TO A SPECIFIC indexName //
