@@ -1,6 +1,25 @@
 import { connectToSnowflake } from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
+function consumeStream(stream) {
+  return new Promise((resolve, reject) => {
+    const rows = [];
+
+    stream.on("error", (err) => {
+      reject(new Error("Unable to consume all rows"));
+    });
+
+    stream.on("data", (row) => {
+      // Consume result row...
+      rows.push(row);
+    });
+
+    stream.on("end", () => {
+      resolve(rows);
+    });
+  });
+}
+
 export async function getChatList(userId) {
   try {
     const conn = await connectToSnowflake();
@@ -18,13 +37,12 @@ export async function getChatList(userId) {
     });
 
     const chatList = [];
-    while (statement.next()) {
-      const chatId = statement.getColumnValue(1);
-      const chatName = statement.getColumnValue(2);
+    const rows = await consumeStream(statement.streamRows());
+    for (const row of rows) {
+      const chatId = row["CHATID"];
+      const chatName = row["CHATNAME"];
       chatList.push({ chatId, chatName });
     }
-
-    console.log("Chat List:", chatList);
     return chatList;
   } catch (err) {
     console.error(
@@ -53,13 +71,13 @@ export async function getChatData(userId, chatId) {
     });
 
     const chatData = [];
-    while (statement.next()) {
-      const text = statement.getColumnValue(1);
-      const isIn = statement.getColumnValue(2);
-      const time = statement.getColumnValue(3);
+    const rows = await consumeStream(statement.streamRows());
+    for (const row of rows) {
+      const text = row["TEXT"];
+      const isIn = row["ISIN"];
+      const time = row["TIME"];
       chatData.push({ text, isIn, time });
     }
-
     console.log("Chat Data:", chatData);
     return chatData;
   } catch (err) {
@@ -114,9 +132,8 @@ export async function pushMessage(userId, chatId, isIn, text) {
 
 export async function updateChatName(userId, chatId, chatName) {
   try {
-    const conn = await connect;
+    const conn = await connectToSnowflake();
 
-    ToSnowflake();
     const statement = conn.execute({
       sqlText: `
         -- Query to update chat name
@@ -139,11 +156,15 @@ export async function updateChatName(userId, chatId, chatName) {
 export async function deleteChat(userId, chatId) {
   try {
     const conn = await connectToSnowflake();
-    const statement = conn.execute({
+    const deleteChatList = conn.execute({
       sqlText: `
         -- Query to delete a chat
         DELETE FROM ChatList
         WHERE userId = '${userId}' AND chatId = '${chatId}';
+      `,
+    });
+    const deleteChatData = conn.execute({
+      sqlText: `
         -- Query to delete a chat data
         DELETE FROM ChatData
         WHERE userId = '${userId}' AND chatId = '${chatId}';

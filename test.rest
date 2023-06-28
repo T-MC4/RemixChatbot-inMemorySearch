@@ -99,3 +99,72 @@ Content-Type: application/json
 
 ### Delete Session
 DELETE {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/1cb7925a-e3da-4887-9049-1c08333c5ef1
+
+@deploy_url = https://sherlock-inmemorysearch-production.up.railway.app
+@user_id = bb305a12-533a-457a-b963-ea6f3b6394e1
+@chat_id = b1ebf241-997a-4d18-9602-a53c5101328c
+###
+### GET /api/chat/:userId
+###
+
+GET {{base_url}}/api/chat/{{user_id}}
+
+###
+
+###
+### GET /api/chat/:userId/:chatId
+###
+
+GET {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
+
+###
+
+###
+### POST /api/chat/:userId
+###
+
+POST {{base_url}}/api/chat/{{user_id}}
+Content-Type: application/json
+
+{
+  "from": "2023-01-01",
+  "to": "2023-01-10",
+  "chatName": "Sample Chat"
+}
+
+###
+
+###
+### PUT /api/chat/:userId/:chatId
+###
+
+PUT {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
+Content-Type: application/json
+
+{
+  "isIn": true,
+  "text": "Hello!"
+}
+
+###
+
+###
+### PUT /api/chat/:userId/:chatId/name
+###
+
+PUT {{base_url}}/api/chat/{{user_id}}/{{chat_id}}/name
+Content-Type: application/json
+
+{
+  "chatName": "Updated Chat Name"
+}
+
+###
+
+###
+### DELETE /api/chat/:userId/:chatId
+###
+
+DELETE {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
+
+###
