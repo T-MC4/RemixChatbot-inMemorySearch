@@ -14,6 +14,10 @@ const router = express.Router();
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
 
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "Invalid userId." });
+  }
+
   try {
     const chatList = await getChatList(userId);
     res.json({ success: true, items: chatList, message: "Success." });
@@ -25,6 +29,12 @@ router.get("/:userId", async (req, res) => {
 // GET /api/chat/:userId/:chatId
 router.get("/:userId/:chatId", async (req, res) => {
   const { userId, chatId } = req.params;
+
+  if (!userId || !chatId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid userId or chatId." });
+  }
 
   try {
     const chatData = await getChatData(userId, chatId);
@@ -39,6 +49,16 @@ router.post("/:userId", async (req, res) => {
   const { userId } = req.params;
   const { from, to, chatName } = req.body;
 
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "Invalid userId." });
+  }
+
+  if (!from || !to || !chatName) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid chat data." });
+  }
+
   try {
     const chatId = await createChat(userId, from, to, chatName);
     res.json({ success: true, chatId, message: "Success." });
@@ -51,6 +71,18 @@ router.post("/:userId", async (req, res) => {
 router.put("/:userId/:chatId", async (req, res) => {
   const { userId, chatId } = req.params;
   const { isIn, text } = req.body;
+
+  if (!userId || !chatId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid userId or chatId." });
+  }
+
+  if (!isIn || !text) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid message data." });
+  }
 
   try {
     await pushMessage(userId, chatId, isIn, text);
@@ -65,6 +97,17 @@ router.put("/:userId/:chatId/name", async (req, res) => {
   const { userId, chatId } = req.params;
   const { chatName } = req.body;
 
+  if (!userId || !chatId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid userId or chatId." });
+  }
+  if (!chatName) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid chat name." });
+  }
+
   try {
     await updateChatName(userId, chatId, chatName);
     res.json({ success: true, message: "Success." });
@@ -76,6 +119,12 @@ router.put("/:userId/:chatId/name", async (req, res) => {
 // DELETE /api/chat/:userId/:chatId
 router.delete("/:userId/:chatId", async (req, res) => {
   const { userId, chatId } = req.params;
+
+  if (!userId || !chatId) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid userId or chatId." });
+  }
 
   try {
     await deleteChat(userId, chatId);

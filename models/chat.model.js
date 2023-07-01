@@ -55,7 +55,7 @@ export async function getChatList(userId) {
 export async function getChatData(userId, chatId) {
   try {
     const conn = await connectToSnowflake();
-    const statement = conn.execute({
+    const chatDataStatement = conn.execute({
       sqlText: `
         -- Query to fetch chat data
         SELECT
@@ -69,17 +69,40 @@ export async function getChatData(userId, chatId) {
           AND cd.chatId = '${chatId}';
       `,
     });
+    const chatListStatement = conn.execute({
+      sqlText: `
+        -- Query to fetch chat list
+        SELECT
+          c.fromDate, 
+          c.toDate
+        FROM
+          ChatList AS c
+        WHERE
+          c.userId = '${userId}'
+          AND c.chatId = '${chatId}';
+      `,
+    });
+
+    const listRows = await consumeStream(chatListStatement.streamRows());
+    const list = listRows[0];
+    const fromDate = list["FROMDATE"];
+    const toDate = list["TODATE"];
 
     const chatData = [];
-    const rows = await consumeStream(statement.streamRows());
-    for (const row of rows) {
+    const dataRows = await consumeStream(chatDataStatement.streamRows());
+    for (const row of dataRows) {
       const text = row["TEXT"];
       const isIn = row["ISIN"];
       const time = row["TIME"];
       chatData.push({ text, isIn, time });
     }
-    console.log("Chat Data:", chatData);
-    return chatData;
+
+    console.log("Chat Data:", chatData, fromDate, toDate);
+
+    return {
+      dateRange: { fromDate, toDate },
+      items: chatData,
+    };
   } catch (err) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
