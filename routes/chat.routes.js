@@ -78,7 +78,7 @@ router.put("/:userId/:chatId", async (req, res) => {
       .json({ success: false, message: "Invalid userId or chatId." });
   }
 
-  if (typeof isIn !== 'undefined' || !text) {
+  if (typeof isIn === 'undefined' || !text) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid message data." });
