@@ -139,8 +139,9 @@ export async function pushMessage(userId, chatId, isIn, text) {
       sqlText: `
         -- Query to push a message
         INSERT INTO ChatData (userId, chatId, isIn, text, time)
-        VALUES ('${userId}', '${chatId}', ${isIn}, '${text}', CURRENT_TIMESTAMP);
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP);
       `,
+      binds: [userId, chatId, isIn, text],
     });
 
     console.log("Message pushed successfully.");
