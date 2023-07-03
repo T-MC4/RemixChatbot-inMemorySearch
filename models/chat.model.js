@@ -238,7 +238,7 @@ export async function createChatDataTable() {
           userId VARCHAR(255),
           chatId VARCHAR(255),
           isIn BOOLEAN,
-          text VARCHAR(1000),
+          text TEXT,
           time TIMESTAMP_NTZ,
           PRIMARY KEY (userId, chatId, time)
         );
