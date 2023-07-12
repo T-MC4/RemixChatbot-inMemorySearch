@@ -1,8 +1,11 @@
-import { connectToSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
+import {
+  connectToMaxSnowflake,
+  consumeStream,
+} from "../utils/snowflakeUtils.js";
 
 export async function getLeadStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMaxSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -18,7 +21,7 @@ export async function getLeadStats(startDate, endDate, orgId) {
               date_rec < '${endDate}' -- End date
           )
           SELECT
-            date_rec as "date",
+            to_date(date_rec) as "date",
             COALESCE(
               (
                 SELECT
@@ -40,11 +43,11 @@ export async function getLeadStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      leadStats.push({ date, count });
+      const value = row["count"];
+      leadStats.push({ date, value });
     }
 
-    console.log("Lead Stats:", leadStats);
+    console.log("Get Lead Stats:");
 
     return leadStats;
   } catch (err) {
@@ -57,7 +60,7 @@ export async function getLeadStats(startDate, endDate, orgId) {
 
 export async function getDialStats(startDate, endDate, orgId, userId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMaxSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -73,7 +76,7 @@ export async function getDialStats(startDate, endDate, orgId, userId) {
               date_rec < '${endDate}' -- End date
           )
           SELECT
-            date_rec as "date",
+            to_date(date_rec) as "date",
           COALESCE(
             (
               SELECT
@@ -97,11 +100,11 @@ export async function getDialStats(startDate, endDate, orgId, userId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      dialStats.push({ date, count });
+      const value = row["count"];
+      dialStats.push({ date, value });
     }
 
-    console.log("Dial Stats:", dialStats);
+    console.log("Get Dial Stats:");
 
     return dialStats;
   } catch (err) {
@@ -119,7 +122,7 @@ export async function getOneMinConversionStats(
   userId
 ) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMaxSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -135,7 +138,7 @@ export async function getOneMinConversionStats(
               date_rec < '${endDate}' -- End date
           )
           SELECT
-            date_rec as "date",
+            to_date(date_rec) as "date",
           COALESCE(
             (
               SELECT
@@ -160,11 +163,11 @@ export async function getOneMinConversionStats(
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      oneMinConversionStats.push({ date, count });
+      const value = row["count"];
+      oneMinConversionStats.push({ date, value });
     }
 
-    console.log("1-Min Conversion Stats:", oneMinConversionStats);
+    console.log("Get 1-Min Conversion Stats:");
 
     return oneMinConversionStats;
   } catch (err) {
@@ -177,7 +180,7 @@ export async function getOneMinConversionStats(
 
 export async function getSetsStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMaxSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -193,7 +196,7 @@ export async function getSetsStats(startDate, endDate, orgId) {
               date_rec < '${endDate}' -- End date
           )
           SELECT
-            date_rec AS "date",
+            to_date(date_rec) AS "date",
           COALESCE(
             (
                 SELECT
@@ -216,11 +219,11 @@ export async function getSetsStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      setsStats.push({ date, count });
+      const value = row["count"];
+      setsStats.push({ date, value });
     }
 
-    console.log("Sets Stats:", setsStats);
+    console.log("Get Sets Stats:");
 
     return setsStats;
   } catch (err) {
@@ -233,7 +236,7 @@ export async function getSetsStats(startDate, endDate, orgId) {
 
 export async function getDQStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMaxSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -249,7 +252,7 @@ export async function getDQStats(startDate, endDate, orgId) {
               date_rec < '${endDate}' -- End date
           )
           SELECT
-            date_rec AS "date",
+            to_date(date_rec) AS "date",
             COALESCE(
               (
                 SELECT
@@ -273,11 +276,11 @@ export async function getDQStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      dqStats.push({ date, count });
+      const value = row["count"];
+      dqStats.push({ date, value });
     }
 
-    console.log("DQ Stats:", dqStats);
+    console.log("Get DQ Stats:");
 
     return dqStats;
   } catch (err) {

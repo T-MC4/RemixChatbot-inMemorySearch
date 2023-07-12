@@ -1,9 +1,9 @@
-import { connectToSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
+import { connectToSherlockSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
 export async function getChatList(userId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         -- Query to fetch chat list
@@ -34,7 +34,7 @@ export async function getChatList(userId) {
 
 export async function getChatData(userId, chatId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const chatDataStatement = conn.execute({
       sqlText: `
         -- Query to fetch chat data
@@ -93,7 +93,7 @@ export async function getChatData(userId, chatId) {
 
 export async function createChat(userId, from, to, chatName) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const chatId = uuidv4(); // Function to generate a unique UUID
     const statement = conn.execute({
       sqlText: `
@@ -114,7 +114,7 @@ export async function createChat(userId, from, to, chatName) {
 
 export async function pushMessage(userId, chatId, isIn, text) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         -- Query to push a message
@@ -136,7 +136,7 @@ export async function pushMessage(userId, chatId, isIn, text) {
 
 export async function updateChatName(userId, chatId, chatName) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
 
     const statement = conn.execute({
       sqlText: `
@@ -159,7 +159,7 @@ export async function updateChatName(userId, chatId, chatName) {
 
 export async function deleteChat(userId, chatId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const deleteChatList = conn.execute({
       sqlText: `
         -- Query to delete a chat
@@ -187,7 +187,7 @@ export async function deleteChat(userId, chatId) {
 
 export async function createChatListTable() {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         CREATE TABLE IF NOT EXISTS ChatList (
@@ -212,7 +212,7 @@ export async function createChatListTable() {
 
 export async function createChatDataTable() {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         CREATE TABLE IF NOT EXISTS ChatData (

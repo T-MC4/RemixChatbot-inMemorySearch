@@ -1,9 +1,9 @@
-import { connectToSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
+import { connectToSherlockSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
 export async function getCustomFilter(userId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
       -- Query to fetch custom filter
@@ -37,7 +37,7 @@ export async function getCustomFilter(userId) {
 
 export async function createCustomFilter(userId, title, options) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const filterId = uuidv4();
     const statement = conn.execute({
       sqlText: `
@@ -58,7 +58,7 @@ export async function createCustomFilter(userId, title, options) {
 
 export async function deleteCustomFilter(userId, filterId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
       -- Query to delete a custom filter
@@ -77,7 +77,7 @@ export async function deleteCustomFilter(userId, filterId) {
 
 export async function createFiltersTable() {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
           CREATE TABLE IF NOT EXISTS Filters (

@@ -1,8 +1,8 @@
-import { connectToSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
+import { connectToMidasSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
 
 export async function getClosesStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMidasSnowflake();
 
     
     const dateRangeTableStatement = conn.execute({
@@ -59,11 +59,11 @@ export async function getClosesStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      closesStats.push({ date, count });
+      const value = row["count"];
+      closesStats.push({ date, value });
     }
 
-    console.log("Closes Stats:", closesStats);
+    console.log("Get Closes Stats:");
 
     return closesStats;
   } catch (err) {
@@ -76,7 +76,7 @@ export async function getClosesStats(startDate, endDate, orgId) {
 
 export async function getPiFStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMidasSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -123,11 +123,11 @@ export async function getPiFStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      piFStats.push({ date, count });
+      const value = row["count"];
+      piFStats.push({ date, value });
     }
 
-    console.log("PiF Stats:", piFStats);
+    console.log("Get PiF Stats:");
 
     return piFStats;
   } catch (err) {
@@ -140,7 +140,7 @@ export async function getPiFStats(startDate, endDate, orgId) {
 
 export async function getPayPlanStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMidasSnowflake();
 
     const dateRangeTableStatement = conn.execute({
       sqlText: `
@@ -186,11 +186,11 @@ export async function getPayPlanStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const count = row["count"];
-      payPlanStats.push({ date, count });
+      const value = row["count"];
+      payPlanStats.push({ date, value });
     }
 
-    console.log("Pay Plan Stats:", payPlanStats);
+    console.log("Get Pay Plan Stats:");
 
     return payPlanStats;
   } catch (err) {
@@ -203,7 +203,7 @@ export async function getPayPlanStats(startDate, endDate, orgId) {
 
 export async function getCashStats(startDate, endDate, orgId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToMidasSnowflake();
 
     
     const dateRangeTableStatement = conn.execute({
@@ -253,7 +253,7 @@ export async function getCashStats(startDate, endDate, orgId) {
                     )
                   )
                   AND to_date(c.CREATED_AT) = to_date(date_rec)
-              ), 0) AS total_cash_state
+              ), 0) AS "count"
           FROM
             date_range_table
           ORDER BY
@@ -265,11 +265,11 @@ export async function getCashStats(startDate, endDate, orgId) {
     const rows = await consumeStream(dateRangeTableStatement.streamRows());
     for (const row of rows) {
       const date = row["date"];
-      const totalCash = row["total_cash_state"];
-      cashStats.push({ date, totalCash });
+      const value = row["count"];
+      cashStats.push({ date, value });
     }
 
-    console.log("Cash Stats:", cashStats);
+    console.log("Get Cash Stats:");
 
     return cashStats;
   } catch (err) {
