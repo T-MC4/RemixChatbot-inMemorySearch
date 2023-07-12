@@ -102,7 +102,7 @@ DELETE {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/1cb7925a-e3
 
 @deploy_url = https://sherlock-inmemorysearch-production.up.railway.app
 @user_id = bb305a12-533a-457a-b963-ea6f3b6394e1
-@chat_id = b1ebf241-997a-4d18-9602-a53c5101328c
+@chat_id = f54415b1-5d06-487d-9c93-4afeeb5ffcfc
 ###
 ### GET /api/chat/:userId
 ###

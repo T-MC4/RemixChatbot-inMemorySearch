@@ -22,3 +22,22 @@ export async function connectToSnowflake() {
     throw err;
   }
 }
+
+export function consumeStream(stream) {
+  return new Promise((resolve, reject) => {
+    const rows = [];
+
+    stream.on("error", (err) => {
+      reject(new Error("Unable to consume all rows"));
+    });
+
+    stream.on("data", (row) => {
+      // Consume result row...
+      rows.push(row);
+    });
+
+    stream.on("end", () => {
+      resolve(rows);
+    });
+  });
+}

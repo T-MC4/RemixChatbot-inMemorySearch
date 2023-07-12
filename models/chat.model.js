@@ -1,24 +1,5 @@
-import { connectToSnowflake } from "../utils/snowflakeUtils.js";
+import { connectToSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
-
-function consumeStream(stream) {
-  return new Promise((resolve, reject) => {
-    const rows = [];
-
-    stream.on("error", (err) => {
-      reject(new Error("Unable to consume all rows"));
-    });
-
-    stream.on("data", (row) => {
-      // Consume result row...
-      rows.push(row);
-    });
-
-    stream.on("end", () => {
-      resolve(rows);
-    });
-  });
-}
 
 export async function getChatList(userId) {
   try {
@@ -35,7 +16,6 @@ export async function getChatList(userId) {
           c.userId = '${userId}';
       `,
     });
-
     const chatList = [];
     const rows = await consumeStream(statement.streamRows());
     for (const row of rows) {
@@ -48,7 +28,7 @@ export async function getChatList(userId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
@@ -107,7 +87,7 @@ export async function getChatData(userId, chatId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
@@ -128,7 +108,7 @@ export async function createChat(userId, from, to, chatName) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
@@ -150,7 +130,7 @@ export async function pushMessage(userId, chatId, isIn, text) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
@@ -173,7 +153,7 @@ export async function updateChatName(userId, chatId, chatName) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
@@ -201,7 +181,7 @@ export async function deleteChat(userId, chatId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
@@ -210,7 +190,7 @@ export async function createChatListTable() {
     const conn = await connectToSnowflake();
     const statement = conn.execute({
       sqlText: `
-        CREATE TABLE ChatList (
+        CREATE TABLE IF NOT EXISTS ChatList (
           userId VARCHAR(255),
           chatId VARCHAR(255),
           chatName VARCHAR(255),
@@ -226,6 +206,7 @@ export async function createChatListTable() {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
+    throw err;
   }
 }
 
@@ -234,11 +215,11 @@ export async function createChatDataTable() {
     const conn = await connectToSnowflake();
     const statement = conn.execute({
       sqlText: `
-        CREATE TABLE ChatData (
+        CREATE TABLE IF NOT EXISTS ChatData (
           userId VARCHAR(255),
           chatId VARCHAR(255),
           isIn BOOLEAN,
-          text VARCHAR(1000),
+          text TEXT,
           time TIMESTAMP_NTZ,
           PRIMARY KEY (userId, chatId, time)
         );
@@ -250,5 +231,6 @@ export async function createChatDataTable() {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
+    throw err;
   }
 }
