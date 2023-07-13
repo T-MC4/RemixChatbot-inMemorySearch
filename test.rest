@@ -198,6 +198,14 @@ Content-Type: application/json
 ### Stat
 ###
 
+GET {{base_url}}/api/stat
+Content-Type: application/json
+
+{
+  "orgId": "robonetphy"
+}
+
+
 ### GET /api/stat/:orgId
 ###
 ### Heavy Query takes time
