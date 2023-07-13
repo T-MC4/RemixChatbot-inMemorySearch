@@ -11,8 +11,8 @@ import {
 const router = express.Router();
 
 // GET /api/stat/
-router.get("/", async (req, res) => {
-  const { orgId } = req.body;
+router.get("/:orgId/list", async (req, res) => {
+  const { orgId } = req.params;
 
   if (!orgId) {
     return res.status(400).json({
