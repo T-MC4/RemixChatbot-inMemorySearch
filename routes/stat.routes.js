@@ -22,8 +22,12 @@ router.get("/", async (req, res) => {
   }
 
   try {
+    const states = [];
     const statIds = await getStatsId(orgId);
-    res.json({ success: true, data: statIds, message: "Success." });
+    for (const statName of Object.keys(statIds)) {
+      states.push({ name: statName, id: statIds[statName] });
+    }
+    res.json({ success: true, data: states, message: "Success." });
   } catch (error) {
     res.json({ success: false, data: null, message: error.message });
   }
@@ -93,12 +97,10 @@ router.put("/:orgId/:statId/value", async (req, res) => {
   const { value, date } = req.body;
 
   if (!statId || !value || !date || !orgId) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Invalid statId, orgId, value, or date.",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Invalid statId, orgId, value, or date.",
+    });
   }
 
   try {
