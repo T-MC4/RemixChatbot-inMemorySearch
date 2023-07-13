@@ -14,7 +14,7 @@ export async function getCustomFilter(userId) {
       FROM 
         Filters AS f
       WHERE 
-        f.userId = ${userId}`,
+        f.userId = '${userId}'`,
     });
 
     const customFilter = [];
@@ -43,8 +43,8 @@ export async function createCustomFilter(userId, title, options) {
       sqlText: `
       -- Query to create a custom filter
       INSERT INTO Filters (filterId, userId, title, options) 
-      VALUES (?, ?, ?, ?)`,
-      binds: [filterId, userId, title, options],
+      SELECT ?, ?, ?, PARSE_JSON(?)`,
+      binds: [filterId, userId, title, JSON.stringify(options)],
     });
     console.log("Custom filter created successfully.");
     return filterId;
@@ -63,7 +63,7 @@ export async function deleteCustomFilter(userId, filterId) {
       sqlText: `
       -- Query to delete a custom filter
       DELETE FROM Filters 
-      WHERE userId = ${userId} AND filterId = ${filterId}`,
+      WHERE userId = '${userId}' AND filterId = '${filterId}'`,
     });
     console.log("Custom filter deleted successfully.");
     return true;

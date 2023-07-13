@@ -14,6 +14,8 @@ import { saveDataToS3, loadDataFromS3 } from "./utils/fileStore.js";
 import InitDatabase from "./models/initDB.model.js";
 import sessionRoutes from "./routes/session.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
+import filterRoutes from "./routes/filter.routes.js";
+import statRoutes from "./routes/stat.routes.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -35,6 +37,9 @@ let model;
 
 app.use("/api/session", sessionRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/filter", filterRoutes);
+app.use("/api/stat", statRoutes);
+
 
 // ------------------------------------------------------------------------------------------- //
 // ** BULK ACTION **: EMBEDD FILES IN THE 'to_process' FOLDER THAT PERTAIN TO A SPECIFIC indexName //

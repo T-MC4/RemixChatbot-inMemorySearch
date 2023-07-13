@@ -35,7 +35,7 @@ export async function initState(orgId) {
       FROM
         Stats
       WHERE 
-        orgId = ${orgId}
+        orgId = '${orgId}'
       `,
     });
     const rows = await consumeStream(existingRecord.streamRows());
@@ -60,7 +60,7 @@ export async function initState(orgId) {
   }
 }
 
-export async function getStateId(orgId) {
+export async function getStatsId(orgId) {
   try {
     const conn = await connectToSherlockSnowflake();
     const existingRecord = await conn.execute({
@@ -71,20 +71,20 @@ export async function getStateId(orgId) {
       FROM
         Stats
       WHERE 
-        orgId = ${orgId}
+        orgId = '${orgId}'
       `,
     });
     const rows = await consumeStream(existingRecord.streamRows());
 
-    const stateIds = {};
+    const statIds = {};
 
     for (const row of rows) {
       const title = row["TITLE"];
       const statId = row["STATID"];
-      stateIds[title] = statId;
+      statIds[title] = statId;
     }
 
-    return stateIds;
+    return statIds;
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + error.message
@@ -120,7 +120,7 @@ export async function getStateValues(startDate, endDate, orgId) {
       LEFT JOIN (
         SELECT
           s.title,
-          COALESCE(sv.indata, sub.date_rec) AS indata,
+          COALESCE(sv.indate, sub.date_rec) AS indate,
           COALESCE(sv.value, 0) AS value,
           s.orgid
         FROM
@@ -130,7 +130,7 @@ export async function getStateValues(startDate, endDate, orgId) {
         LEFT JOIN
           StatValues sv ON sv.statId = s.statId 
       ) state
-        ON to_date(state.inData) = date_rec
+        ON to_date(state.inDate) = date_rec
       WHERE
         state.orgId = '${orgId}'
       ORDER BY
@@ -158,7 +158,6 @@ export async function getStateValues(startDate, endDate, orgId) {
       name: title,
       data,
     }));
-
     console.log("Get DB State Values:");
 
     return stats;
@@ -172,9 +171,10 @@ export async function getStateValues(startDate, endDate, orgId) {
 
 export async function getStates(startDate, endDate, orgId) {
   try {
+    await initState(orgId);
     const stats = await getStats(startDate, endDate, orgId);
     const stateValues = await getStateValues(startDate, endDate, orgId);
-    const stateIds = await getStateId(orgId);
+    const statIds = await getStatsId(orgId);
     const combinedData = {};
 
     // Merge stats data
@@ -187,7 +187,8 @@ export async function getStates(startDate, endDate, orgId) {
     for (const stateValue of stateValues) {
       const { name, data } = stateValue;
       if (!combinedData[name]) {
-        combinedData[name] = [];
+        combinedData[name] = data;
+        continue;
       }
 
       for (const entry of data) {
@@ -208,7 +209,7 @@ export async function getStates(startDate, endDate, orgId) {
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
       data,
-      id: stateIds[name],
+      id: statIds[name],
     }));
 
     // console.log("Combined Result:", result);
@@ -222,20 +223,20 @@ export async function getStates(startDate, endDate, orgId) {
 
 export async function createStatItem(orgId, title) {
   try {
-    initState(orgId);
+    await initState(orgId);
 
     const conn = await connectToSherlockSnowflake();
-    const stateId = uuidv4();
+    const statId = uuidv4();
 
     const statement = conn.execute({
       sqlText: `
       -- Query to create a stat item
       INSERT INTO Stats (statId, orgId, title)
-      VALUES (?, ?, ?, ?, ?)`,
-      binds: [stateId, orgId, title],
+      VALUES (?, ?, ?)`,
+      binds: [statId, orgId, title],
     });
     console.log("Stat item created successfully.");
-    return stateId;
+    return statId;
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
@@ -244,15 +245,15 @@ export async function createStatItem(orgId, title) {
   }
 }
 
-export async function updateStatItemName(orgId, statId, title) {
+export async function updateStatItemName(statId, title) {
   try {
     const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
       -- Query to update stat item name
       UPDATE Stats 
-      SET title = ${title}
-      WHERE orgId = ${orgId} AND statId = ${statId}`,
+      SET title = '${title}'
+      WHERE statId = '${statId}'`,
     });
     console.log("Stat item name updated successfully.");
   } catch (error) {
@@ -262,7 +263,8 @@ export async function updateStatItemName(orgId, statId, title) {
     throw err;
   }
 }
-export async function getFinalUpdateValue(statId, value, date) {
+
+export async function getFinalUpdateValue(orgId, statId, value, date) {
   const conn = await connectToSherlockSnowflake();
   const statTitle = await conn.execute({
     sqlText: `
@@ -271,11 +273,13 @@ export async function getFinalUpdateValue(statId, value, date) {
     FROM 
       Stats
     WHERE 
-      statId = ${statId}
+      statId = '${statId}'
     `,
   });
-  const title = statTitle[0]["TITLE"];
-  const data = getStatsByName(date, date, orgId, title);
+  const rows = await consumeStream(statTitle.streamRows());
+
+  const title = rows[0]["TITLE"];
+  const data = await getStatsByName(date, date, orgId, title);
   if (data === -1) {
     return value;
   } else {
@@ -283,41 +287,41 @@ export async function getFinalUpdateValue(statId, value, date) {
   }
 }
 
-export async function updateStatItemValue(statId, value, date) {
+export async function updateStatItemValue(orgId, statId, value, date) {
   try {
     const conn = await connectToSherlockSnowflake();
     const existingRecord = await conn.execute({
       sqlText: `
-      SELECT stateValueId
+      SELECT statValueId
       FROM StatValues
-      WHERE statId = ${statId}
-        AND inDate = ${date}
+      WHERE statId = '${statId}'
+        AND inDate = '${date}'
       `,
     });
 
     const rows = await consumeStream(existingRecord.streamRows());
-    const newValue = await getFinalUpdateValue(statId, value, date);
+    const newValue = await getFinalUpdateValue(orgId, statId, value, date);
 
     if (rows.length > 0) {
       // Update the existing record
-      const stateValueId = rows[0]["STATEVALUEID"];
+      const statValueId = rows[0]["STATVALUEID"];
       const statement = conn.execute({
         sqlText: `
         UPDATE StatValues
         SET value = ${newValue}
-        WHERE stateValueId = ${stateValueId}
+        WHERE statValueId = ${statValueId}
         `,
       });
       console.log("Stat item value updated successfully.");
     } else {
       // Insert a new record
-      const stateValueId = uuidv4();
+      const statValueId = uuidv4();
       const statement = conn.execute({
         sqlText: `
-        INSERT INTO StatValues (stateValueId, statId, value, inDate) 
+        INSERT INTO StatValues (statValueId, statId, value, inDate) 
         VALUES (?, ?, ?, ?)
         `,
-        binds: [stateValueId, statId, newValue, date],
+        binds: [statValueId, statId, newValue, date],
       });
       console.log("New stat item value inserted successfully.");
     }
@@ -336,7 +340,7 @@ export async function deleteStatItems(orgId, statId) {
       sqlText: `
       -- Query to delete stat items
       DELETE FROM Stats
-      WHERE orgId = ${orgId} AND statId = ${statId}`,
+      WHERE orgId = '${orgId}' AND statId = '${statId}'`,
     });
     console.log("Stat items deleted successfully.");
   } catch (error) {
@@ -378,7 +382,7 @@ export async function createStatValuesTable() {
                 statValueId VARCHAR(255) PRIMARY KEY,
                 statId VARCHAR(255),
                 value NUMBER,
-                inData DATE
+                inDate DATE
               )
             `,
     });
