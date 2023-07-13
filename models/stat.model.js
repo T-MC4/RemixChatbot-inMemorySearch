@@ -128,7 +128,7 @@ export async function getStateValues(startDate, endDate, orgId) {
         LEFT JOIN
           (SELECT date_rec FROM date_range_table) sub ON 1=1
         LEFT JOIN
-          StatValues sv ON sv.statId = s.statId 
+          StatValues sv ON sv.statId = s.statId AND sub.date_rec = sv.indate
       ) state
         ON to_date(state.inDate) = date_rec
       WHERE
