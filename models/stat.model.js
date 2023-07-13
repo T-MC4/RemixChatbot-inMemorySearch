@@ -62,6 +62,7 @@ export async function initState(orgId) {
 
 export async function getStatsId(orgId) {
   try {
+    await initState(orgId);
     const conn = await connectToSherlockSnowflake();
     const existingRecord = await conn.execute({
       sqlText: `

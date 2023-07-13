@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getStates,
+  getStatsId,
   createStatItem,
   updateStatItemName,
   updateStatItemValue,
@@ -8,6 +9,25 @@ import {
 } from "../models/stat.model.js";
 
 const router = express.Router();
+
+// GET /api/stat/
+router.get("/", async (req, res) => {
+  const { orgId } = req.body;
+
+  if (!orgId) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid orgId.",
+    });
+  }
+
+  try {
+    const statIds = await getStatsId(orgId);
+    res.json({ success: true, data: statIds, message: "Success." });
+  } catch (error) {
+    res.json({ success: false, data: null, message: error.message });
+  }
+});
 
 // GET /api/stat/:orgId
 router.get("/:orgId", async (req, res) => {
@@ -75,7 +95,10 @@ router.put("/:orgId/:statId/value", async (req, res) => {
   if (!statId || !value || !date || !orgId) {
     return res
       .status(400)
-      .json({ success: false, message: "Invalid statId, orgId, value, or date." });
+      .json({
+        success: false,
+        message: "Invalid statId, orgId, value, or date.",
+      });
   }
 
   try {
