@@ -28,7 +28,7 @@ const fixedStats = [
 export async function initState(orgId) {
   try {
     const conn = await connectToSherlockSnowflake();
-    const existingRecord = await conn.execute({
+    const existingRecord = conn.execute({
       sqlText: `
       SELECT 
         title
@@ -41,15 +41,20 @@ export async function initState(orgId) {
     const rows = await consumeStream(existingRecord.streamRows());
 
     if (rows.length < 17) {
+      let query = `
+      -- Query to create a stat item
+      INSERT INTO Stats (statId, orgId, title)
+      VALUES `;
+      const binds = [];
       for (const stat of fixedStats) {
-        await conn.execute({
-          sqlText: `
-          -- Query to create a stat item
-          INSERT INTO Stats (statId, orgId, title)
-          VALUES (?, ?, ?)`,
-          binds: [uuidv4(), orgId, stat],
-        });
+        query += `(?, ?, ?),`;
+        binds.push(uuidv4(), orgId, stat);
       }
+      query = query.slice(0, -1);
+      conn.execute({
+        sqlText: query,
+        binds,
+      });
       console.log("Stats initialized successfully.");
     }
   } catch (error) {
@@ -64,7 +69,7 @@ export async function getStatsId(orgId) {
   try {
     await initState(orgId);
     const conn = await connectToSherlockSnowflake();
-    const existingRecord = await conn.execute({
+    const existingRecord = conn.execute({
       sqlText: `
       SELECT 
         title,
@@ -76,7 +81,7 @@ export async function getStatsId(orgId) {
       `,
     });
     const rows = await consumeStream(existingRecord.streamRows());
-
+    console.log();
     const statIds = {};
 
     for (const row of rows) {
@@ -267,7 +272,7 @@ export async function updateStatItemName(statId, title) {
 
 export async function getFinalUpdateValue(orgId, statId, value, date) {
   const conn = await connectToSherlockSnowflake();
-  const statTitle = await conn.execute({
+  const statTitle = conn.execute({
     sqlText: `
     SELECT 
       title
@@ -291,7 +296,7 @@ export async function getFinalUpdateValue(orgId, statId, value, date) {
 export async function updateStatItemValue(orgId, statId, value, date) {
   try {
     const conn = await connectToSherlockSnowflake();
-    const existingRecord = await conn.execute({
+    const existingRecord = conn.execute({
       sqlText: `
       SELECT statValueId
       FROM StatValues

@@ -103,9 +103,6 @@ DELETE {{base_url}}/api/session/bb305a12-533a-457a-b963-ea6f3b6394e1/1cb7925a-e3
 @deploy_url = https://sherlock-inmemorysearch-production.up.railway.app
 @user_id = bb305a12
 @chat_id = f54415b1-5d06-487d-9c93-4afeeb5ffcfc
-@org_id = robonetphy
-@filter_id = 74888be7-573e-4832-8c13-3463584cb517
-@stat_id = 905038a6-c506-4f1e-9779-52f249b5b7a8
 ###
 ### GET /api/chat/:userId
 ###
@@ -172,6 +169,9 @@ DELETE {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
 
 ###
 
+@org_id = s123123
+@filter_id = 74888be7-573e-4832-8c13-3463584cb517
+@stat_id = 905038a6-c506-4f1e-9779-52f249b5b7a8
 
 ###
 ### Filter 
@@ -198,12 +198,9 @@ Content-Type: application/json
 ### Stat
 ###
 
-GET {{base_url}}/api/stat
+GET {{base_url}}/api/stat/{{org_id}}/list
 Content-Type: application/json
 
-{
-  "orgId": "robonetphy"
-}
 
 
 ### GET /api/stat/:orgId
