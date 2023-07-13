@@ -1,28 +1,9 @@
-import { connectToSnowflake } from "../utils/snowflakeUtils.js";
+import { connectToSherlockSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
-
-function consumeStream(stream) {
-  return new Promise((resolve, reject) => {
-    const rows = [];
-
-    stream.on("error", (err) => {
-      reject(new Error("Unable to consume all rows"));
-    });
-
-    stream.on("data", (row) => {
-      // Consume result row...
-      rows.push(row);
-    });
-
-    stream.on("end", () => {
-      resolve(rows);
-    });
-  });
-}
 
 export async function getChatList(userId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         -- Query to fetch chat list
@@ -35,7 +16,6 @@ export async function getChatList(userId) {
           c.userId = '${userId}';
       `,
     });
-
     const chatList = [];
     const rows = await consumeStream(statement.streamRows());
     for (const row of rows) {
@@ -48,13 +28,13 @@ export async function getChatList(userId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
 export async function getChatData(userId, chatId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const chatDataStatement = conn.execute({
       sqlText: `
         -- Query to fetch chat data
@@ -107,13 +87,13 @@ export async function getChatData(userId, chatId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
 export async function createChat(userId, from, to, chatName) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const chatId = uuidv4(); // Function to generate a unique UUID
     const statement = conn.execute({
       sqlText: `
@@ -128,13 +108,13 @@ export async function createChat(userId, from, to, chatName) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return null;
+    throw err;
   }
 }
 
 export async function pushMessage(userId, chatId, isIn, text) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
         -- Query to push a message
@@ -150,13 +130,13 @@ export async function pushMessage(userId, chatId, isIn, text) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
 export async function updateChatName(userId, chatId, chatName) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
 
     const statement = conn.execute({
       sqlText: `
@@ -173,13 +153,13 @@ export async function updateChatName(userId, chatId, chatName) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
 export async function deleteChat(userId, chatId) {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const deleteChatList = conn.execute({
       sqlText: `
         -- Query to delete a chat
@@ -201,16 +181,16 @@ export async function deleteChat(userId, chatId) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
-    return false;
+    throw err;
   }
 }
 
 export async function createChatListTable() {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
-        CREATE TABLE ChatList (
+        CREATE TABLE IF NOT EXISTS ChatList (
           userId VARCHAR(255),
           chatId VARCHAR(255),
           chatName VARCHAR(255),
@@ -226,15 +206,16 @@ export async function createChatListTable() {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
+    throw err;
   }
 }
 
 export async function createChatDataTable() {
   try {
-    const conn = await connectToSnowflake();
+    const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
-        CREATE TABLE ChatData (
+        CREATE TABLE IF NOT EXISTS ChatData (
           userId VARCHAR(255),
           chatId VARCHAR(255),
           isIn BOOLEAN,
@@ -250,5 +231,6 @@ export async function createChatDataTable() {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
     );
+    throw err;
   }
 }
