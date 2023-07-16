@@ -32,34 +32,47 @@ const connMidasOptions = {
   role: process.env.SNOWFLAKE_ROLE,
 };
 
+let sherlockConnection = null;
+let maxConnection = null;
+let midasConnection = null;
+
 export async function connectToSherlockSnowflake() {
-  const connection = snowflake.createConnection(connSherlockOptions);
-  try {
-    await connection.connect();
-    return connection;
-  } catch (err) {
-    throw err;
+  if (!sherlockConnection) {
+    sherlockConnection = snowflake.createConnection(connSherlockOptions);
+    try {
+      await sherlockConnection.connect();
+    } catch (err) {
+      sherlockConnection = null;
+      throw err;
+    }
   }
+  return sherlockConnection;
 }
 
 export async function connectToMaxSnowflake() {
-  const connection = snowflake.createConnection(connMaxOptions);
-  try {
-    await connection.connect();
-    return connection;
-  } catch (err) {
-    throw err;
+  if (!maxConnection) {
+    maxConnection = snowflake.createConnection(connMaxOptions);
+    try {
+      await maxConnection.connect();
+    } catch (err) {
+      maxConnection = null;
+      throw err;
+    }
   }
+  return maxConnection;
 }
 
 export async function connectToMidasSnowflake() {
-  const connection = snowflake.createConnection(connMidasOptions);
-  try {
-    await connection.connect();
-    return connection;
-  } catch (err) {
-    throw err;
+  if (!midasConnection) {
+    midasConnection = snowflake.createConnection(connMidasOptions);
+    try {
+      await midasConnection.connect();
+    } catch (err) {
+      midasConnection = null;
+      throw err;
+    }
   }
+  return midasConnection;
 }
 
 export function consumeStream(stream) {
