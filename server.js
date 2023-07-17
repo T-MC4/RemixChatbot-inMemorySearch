@@ -16,11 +16,15 @@ import sessionRoutes from "./routes/session.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import filterRoutes from "./routes/filter.routes.js";
 import statRoutes from "./routes/stat.routes.js";
+import bodyParser from "body-parser";
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
+
+// Add the following middleware to parse url-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // ------------------------------------------------------------------------------------------- //
 // IMPLEMENT THIS INTO AIRCHAT SO THAT IT ONLY RUNS ONCE (IDEALLY BEFORE THE CALL EVEN STARTS) //
@@ -39,7 +43,6 @@ app.use("/api/session", sessionRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/filter", filterRoutes);
 app.use("/api/stat", statRoutes);
-
 
 // ------------------------------------------------------------------------------------------- //
 // ** BULK ACTION **: EMBEDD FILES IN THE 'to_process' FOLDER THAT PERTAIN TO A SPECIFIC indexName //

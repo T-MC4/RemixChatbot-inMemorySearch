@@ -40,7 +40,7 @@ router.get("/:orgId/list", async (req, res) => {
 // GET /api/stat/:orgId
 router.get("/:orgId", async (req, res) => {
   const { orgId } = req.params;
-  const { startDate, endDate } = req.body;
+  const { startDate, endDate } = req.query;
 
   if (!startDate || !endDate || !orgId) {
     return res.status(400).json({
