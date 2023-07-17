@@ -52,7 +52,7 @@ export async function initState(orgId) {
         const id = uuidv4();
         binds.push(id, orgId, stat["title"], stat["category"]);
         stats[stat["title"]] = {
-          id,
+          statId: id,
           category: stat["category"],
         };
       }
