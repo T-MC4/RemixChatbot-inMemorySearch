@@ -46,9 +46,15 @@ export async function initState(orgId) {
       INSERT INTO Stats (statId, orgId, title, category)
       VALUES `;
       const binds = [];
+      const stats = {};
       for (const stat of fixedStats) {
         query += `(?, ?, ?, ?),`;
-        binds.push(uuidv4(), orgId, stat["title"], stat["category"]);
+        const id = uuidv4();
+        binds.push(id, orgId, stat["title"], stat["category"]);
+        stats[stat["title"]] = {
+          id,
+          category: stat["category"],
+        };
       }
       query = query.slice(0, -1);
       conn.execute({
@@ -56,7 +62,9 @@ export async function initState(orgId) {
         binds,
       });
       console.log("Stats initialized successfully.");
+      return stats;
     }
+    return null;
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + error.message
@@ -67,7 +75,10 @@ export async function initState(orgId) {
 
 export async function getStatsId(orgId) {
   try {
-    await initState(orgId);
+    const stats = await initState(orgId);
+    if (stats) {
+      return stats;
+    }
     const conn = await connectToSherlockSnowflake();
     const existingRecord = conn.execute({
       sqlText: `
