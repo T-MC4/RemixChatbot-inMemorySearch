@@ -203,16 +203,18 @@ Content-Type: application/json
 
 
 
+###
 ### GET /api/stat/:orgId
 ###
-### Heavy Query takes time
-GET {{base_url}}/api/stat/{{org_id}}
-Content-Type: application/json
 
-{
-  "startDate": "2023-06-15",
-  "endDate": "2023-06-17"
-}
+# Request Parameters
+@orgId = robonetphy
+@startDate = 2023-07-01
+@endDate = 2023-07-15
+
+GET {{base_url}}/api/stat/{{orgId}}?startDate={{startDate}}&endDate={{endDate}}
+Accept: application/json
+Content-Type: application/x-www-form-urlencoded
 
 ###
 ### POST /api/stat/:orgId
