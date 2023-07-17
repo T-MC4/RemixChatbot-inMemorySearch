@@ -169,7 +169,7 @@ DELETE {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
 
 ###
 
-@org_id = spiderman123
+@org_id = robonetphy
 @filter_id = d49be3a2-dac8-496b-98d8-ad3df59307b6
 @stat_id = 905038a6-c506-4f1e-9779-52f249b5b7a8
 
