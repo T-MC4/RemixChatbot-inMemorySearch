@@ -306,7 +306,7 @@ function convertMaxStats(rows) {
     rows.forEach(function (item) {
       obj.data.push({
         date: item.date,
-        count: item[key],
+        value: item[key],
       });
     });
 

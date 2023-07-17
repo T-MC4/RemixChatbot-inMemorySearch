@@ -6,23 +6,23 @@ import { v4 as uuidv4 } from "uuid";
 import { getStats, getStatsByName } from "./getStat.model.js";
 
 const fixedStats = [
-  "Leads",
-  "Dials",
-  "1-Minute Conversations",
-  "Sets",
-  "DQ's",
-  "Closes",
-  "PiF's",
-  "Pay Plan",
-  "Cash",
-  "Contacted Leads",
-  "Responses",
-  "Appts Set",
-  "CPM",
-  "CTR",
-  "Opt-in Rate",
-  "Ad Spend",
-  "Shows",
+  { title: "Leads", category: "Paid Ads" },
+  { title: "Dials", category: "Appointment Setting" },
+  { title: "1-Minute Conversations", category: "Appointment Setting" },
+  { title: "Sets", category: "Appointment Setting" },
+  { title: "DQ's", category: "Appointment Setting" },
+  { title: "Closes", category: "Closing" },
+  { title: "PiF's", category: "Closing" },
+  { title: "Pay Plan", category: "Closing" },
+  { title: "Cash", category: "Closing" },
+  { title: "Contacted Leads", category: "Organic Marketing" },
+  { title: "Responses", category: "Organic Marketing" },
+  { title: "Appts Set", category: "Organic Marketing" },
+  { title: "CPM", category: "Paid Ads" },
+  { title: "CTR", category: "Paid Ads" },
+  { title: "Opt-in Rate", category: "Paid Ads" },
+  { title: "Ad Spend", category: "Paid Ads" },
+  { title: "Shows", category: "Closing" },
 ];
 
 export async function initState(orgId) {
@@ -43,12 +43,12 @@ export async function initState(orgId) {
     if (rows.length < 17) {
       let query = `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title)
+      INSERT INTO Stats (statId, orgId, title, category)
       VALUES `;
       const binds = [];
       for (const stat of fixedStats) {
-        query += `(?, ?, ?),`;
-        binds.push(uuidv4(), orgId, stat);
+        query += `(?, ?, ?, ?),`;
+        binds.push(uuidv4(), orgId, stat["title"], stat["category"]);
       }
       query = query.slice(0, -1);
       conn.execute({
@@ -73,7 +73,8 @@ export async function getStatsId(orgId) {
       sqlText: `
       SELECT 
         title,
-        statId
+        statId,
+        category
       FROM
         Stats
       WHERE 
@@ -87,7 +88,11 @@ export async function getStatsId(orgId) {
     for (const row of rows) {
       const title = row["TITLE"];
       const statId = row["STATID"];
-      statIds[title] = statId;
+      const category = row["CATEGORY"];
+      statIds[title] = {
+        statId,
+        category,
+      };
     }
 
     return statIds;
@@ -215,7 +220,8 @@ export async function getStates(startDate, endDate, orgId) {
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
       data,
-      id: statIds[name],
+      id: statIds[name]["statId"],
+      category: statIds[name]["category"],
     }));
 
     // console.log("Combined Result:", result);
@@ -227,7 +233,7 @@ export async function getStates(startDate, endDate, orgId) {
   }
 }
 
-export async function createStatItem(orgId, title) {
+export async function createStatItem(orgId, title, category) {
   try {
     await initState(orgId);
 
@@ -237,9 +243,9 @@ export async function createStatItem(orgId, title) {
     const statement = conn.execute({
       sqlText: `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title)
-      VALUES (?, ?, ?)`,
-      binds: [statId, orgId, title],
+      INSERT INTO Stats (statId, orgId, title, category)
+      VALUES (?, ?, ?, ?)`,
+      binds: [statId, orgId, title, category],
     });
     console.log("Stat item created successfully.");
     return statId;
@@ -365,7 +371,8 @@ export async function createStatsTable() {
             CREATE TABLE IF NOT EXISTS Stats (
               statId VARCHAR(255) PRIMARY KEY,
               orgId VARCHAR(255),
-              title TEXT
+              title TEXT,
+              category TEXT
             )
           `,
     });
