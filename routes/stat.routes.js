@@ -25,7 +25,11 @@ router.get("/:orgId/list", async (req, res) => {
     const states = [];
     const statIds = await getStatsId(orgId);
     for (const statName of Object.keys(statIds)) {
-      states.push({ name: statName, id: statIds[statName] });
+      states.push({
+        name: statName,
+        id: statIds[statName]["statId"],
+        category: statIds[statName]["category"],
+      });
     }
     res.json({ success: true, data: states, message: "Success." });
   } catch (error) {
