@@ -56,16 +56,16 @@ router.get("/:orgId", async (req, res) => {
 // POST /api/stat/:orgId
 router.post("/:orgId", async (req, res) => {
   const { orgId } = req.params;
-  const { title } = req.body;
+  const { title, category } = req.body;
 
-  if (!orgId || !title) {
+  if (!orgId || !title || !category) {
     return res
       .status(400)
-      .json({ success: false, message: "Invalid orgId or title." });
+      .json({ success: false, message: "Invalid orgId, title or category." });
   }
 
   try {
-    const statId = await createStatItem(orgId, title);
+    const statId = await createStatItem(orgId, title, category);
     res.json({ success: true, statId, message: "Success." });
   } catch (error) {
     res.json({ success: false, statId: null, message: error.message });

@@ -169,36 +169,36 @@ DELETE {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
 
 ###
 
-@org_id = s123123
-@filter_id = 74888be7-573e-4832-8c13-3463584cb517
+@org_id = spiderman123
+@filter_id = d49be3a2-dac8-496b-98d8-ad3df59307b6
 @stat_id = 905038a6-c506-4f1e-9779-52f249b5b7a8
 
 ###
 ### Filter 
 ###
-GET  {{base_url}}/api/filter/{{user_id}}
+GET  {{deploy_url}}/api/filter/{{user_id}}
 Content-Type: application/json
 
 ####
 
-POST {{base_url}}/api/filter/{{user_id}}
+POST {{deploy_url}}/api/filter/{{user_id}}
 Content-Type: application/json
 
 {
-  "title": "New Filter",
+  "title": "New Filter 1",
   "options": ["stat1","stat2"]
 }
 
 ####
 
-DELETE {{base_url}}/api/filter/{{user_id}}/{{filter_id}}
+DELETE {{deploy_url}}/api/filter/{{user_id}}/{{filter_id}}
 Content-Type: application/json
 
 ###
 ### Stat
 ###
 
-GET {{base_url}}/api/stat/{{org_id}}/list
+GET {{deploy_url}}/api/stat/{{org_id}}/list
 Content-Type: application/json
 
 
@@ -210,26 +210,27 @@ GET {{base_url}}/api/stat/{{org_id}}
 Content-Type: application/json
 
 {
-  "startDate": "2023-01-01",
-  "endDate": "2023-01-03"
+  "startDate": "2023-06-15",
+  "endDate": "2023-06-17"
 }
 
 ###
 ### POST /api/stat/:orgId
 ###
 
-POST {{base_url}}/api/stat/{{org_id}}
+POST {{deploy_url}}/api/stat/{{org_id}}
 Content-Type: application/json
 
 {
-  "title": "New Stat Item"
+  "title": "New Stat Item",
+  "category": "Paid Ads"
 }
 
 ###
 ### PUT /api/stat/:statId/name
 ###
 
-PUT {{base_url}}/api/stat/{{stat_id}}/name
+PUT {{deploy_url}}/api/stat/{{stat_id}}/name
 Content-Type: application/json
 
 {
@@ -240,7 +241,7 @@ Content-Type: application/json
 ### PUT /api/stat/:orgId/:statId/value
 ###
 
-PUT {{base_url}}/api/stat/{{org_id}}/{{stat_id}}/value
+PUT {{deploy_url}}/api/stat/{{org_id}}/{{stat_id}}/value
 Content-Type: application/json
 
 {
@@ -252,4 +253,4 @@ Content-Type: application/json
 ### DELETE /api/stat/:orgId/:statId
 ###
 
-DELETE {{base_url}}/api/stat/{{org_id}}/{{stat_id}}
+DELETE {{deploy_url}}/api/stat/{{org_id}}/{{stat_id}}
