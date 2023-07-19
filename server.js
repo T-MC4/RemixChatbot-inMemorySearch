@@ -16,15 +16,11 @@ import sessionRoutes from "./routes/session.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import filterRoutes from "./routes/filter.routes.js";
 import statRoutes from "./routes/stat.routes.js";
-import bodyParser from "body-parser";
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
-
-// Add the following middleware to parse url-encoded bodies
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // ------------------------------------------------------------------------------------------- //
 // IMPLEMENT THIS INTO AIRCHAT SO THAT IT ONLY RUNS ONCE (IDEALLY BEFORE THE CALL EVEN STARTS) //
