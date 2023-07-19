@@ -38,9 +38,9 @@ router.get("/:orgId/list", async (req, res) => {
 });
 
 // GET /api/stat/:orgId
-router.post("/:orgId", async (req, res) => {
+router.get("/:orgId", async (req, res) => {
   const { orgId } = req.params;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate } = req.body;
 
   if (!startDate || !endDate || !orgId) {
     return res.status(400).json({
