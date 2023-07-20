@@ -173,6 +173,7 @@ export async function getStatsId(orgId) {
 
 export async function getStateValues(startDate, endDate, orgId) {
   try {
+    await initState(orgId);
     const conn = await connectToSherlockSnowflake();
 
     // Create a date range table using a recursive CTE
