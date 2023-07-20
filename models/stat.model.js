@@ -6,23 +6,75 @@ import { v4 as uuidv4 } from "uuid";
 import { getStats, getStatsByName } from "./getStat.model.js";
 
 const fixedStats = [
-  { title: "Leads", category: "Paid Ads" },
-  { title: "Dials", category: "Appointment Setting" },
-  { title: "1-Minute Conversations", category: "Appointment Setting" },
-  { title: "Sets", category: "Appointment Setting" },
-  { title: "DQ's", category: "Appointment Setting" },
-  { title: "Closes", category: "Closing" },
-  { title: "PiF's", category: "Closing" },
-  { title: "Pay Plan", category: "Closing" },
-  { title: "Cash", category: "Closing" },
-  { title: "Contacted Leads", category: "Organic Marketing" },
-  { title: "Responses", category: "Organic Marketing" },
-  { title: "Appts Set", category: "Organic Marketing" },
-  { title: "CPM", category: "Paid Ads" },
-  { title: "CTR", category: "Paid Ads" },
-  { title: "Opt-in Rate", category: "Paid Ads" },
-  { title: "Ad Spend", category: "Paid Ads" },
-  { title: "Shows", category: "Closing" },
+  {
+    title: "Leads",
+    category: "Paid Ads",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Dials",
+    category: "Appointment Setting",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "1-Minute Conversations",
+    category: "Appointment Setting",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Sets",
+    category: "Appointment Setting",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "DQ's",
+    category: "Appointment Setting",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Closes",
+    category: "Closing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "PiF's",
+    category: "Closing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Pay Plan",
+    category: "Closing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  { title: "Cash", category: "Closing", formatter: "dollarFormatter" },
+  {
+    title: "Contacted Leads",
+    category: "Organic Marketing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Responses",
+    category: "Organic Marketing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  {
+    title: "Appts Set",
+    category: "Organic Marketing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  { title: "CPM", category: "Paid Ads", formatter: "dollarFormatter" },
+  { title: "CTR", category: "Paid Ads", formatter: "percentageFormatter" },
+  {
+    title: "Opt-in Rate",
+    category: "Paid Ads",
+    formatter: "fixedDecimalPointsFormatter",
+  },
+  { title: "Ad Spend", category: "Paid Ads", formatter: "dollarFormatter" },
+  {
+    title: "Shows",
+    category: "Closing",
+    formatter: "fixedDecimalPointsFormatter",
+  },
 ];
 
 export async function initState(orgId) {
@@ -43,17 +95,18 @@ export async function initState(orgId) {
     if (rows.length < 17) {
       let query = `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title, category)
+      INSERT INTO Stats (statId, orgId, title, category, formatter)
       VALUES `;
       const binds = [];
       const stats = {};
       for (const stat of fixedStats) {
         query += `(?, ?, ?, ?),`;
         const id = uuidv4();
-        binds.push(id, orgId, stat["title"], stat["category"]);
+        binds.push(id, orgId, stat["title"], stat["category"], stat["formatter"]);
         stats[stat["title"]] = {
           statId: id,
           category: stat["category"],
+          formatter: stat["formatter"],
         };
       }
       query = query.slice(0, -1);
@@ -85,7 +138,8 @@ export async function getStatsId(orgId) {
       SELECT 
         title,
         statId,
-        category
+        category,
+        formatter
       FROM
         Stats
       WHERE 
@@ -100,9 +154,11 @@ export async function getStatsId(orgId) {
       const title = row["TITLE"];
       const statId = row["STATID"];
       const category = row["CATEGORY"];
+      const formatter = row["FORMATTER"];
       statIds[title] = {
         statId,
         category,
+        formatter,
       };
     }
 
@@ -134,7 +190,7 @@ export async function getStateValues(startDate, endDate, orgId) {
           date_rec < '${endDate}' -- End date
       )
       SELECT
-        date_rec AS "date",
+        to_char(to_date(date_rec), '%b %d') AS "date",
         COALESCE(state.value, 0) AS "statValue",
         COALESCE(state.title, 'No Title') AS "title"
       FROM
@@ -216,9 +272,7 @@ export async function getStates(startDate, endDate, orgId) {
       for (const entry of data) {
         const { date, value } = entry;
         const existingEntry = combinedData[name].find((item) => {
-          return (
-            item.date.getFormat("yyyy-mm-dd") === date.getFormat("yyyy-mm-dd")
-          );
+          return item.date === date;
         });
         if (existingEntry) {
           existingEntry.value += value;
@@ -230,9 +284,11 @@ export async function getStates(startDate, endDate, orgId) {
 
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
-      data,
+      data: data.map(({ date, value }) => ({ date, [name]: value })),
+      sum: data.reduce((acc, { value = 0 }) => acc + value, 0),
       id: statIds[name]["statId"],
       category: statIds[name]["category"],
+      formatter: statIds[name]["formatter"],
     }));
 
     // console.log("Combined Result:", result);
@@ -244,7 +300,7 @@ export async function getStates(startDate, endDate, orgId) {
   }
 }
 
-export async function createStatItem(orgId, title, category) {
+export async function createStatItem(orgId, title, category, formatter) {
   try {
     await initState(orgId);
 
@@ -254,9 +310,9 @@ export async function createStatItem(orgId, title, category) {
     const statement = conn.execute({
       sqlText: `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title, category)
+      INSERT INTO Stats (statId, orgId, title, category, formatter)
       VALUES (?, ?, ?, ?)`,
-      binds: [statId, orgId, title, category],
+      binds: [statId, orgId, title, category, formatter],
     });
     console.log("Stat item created successfully.");
     return statId;
@@ -383,7 +439,8 @@ export async function createStatsTable() {
               statId VARCHAR(255) PRIMARY KEY,
               orgId VARCHAR(255),
               title TEXT,
-              category TEXT
+              category TEXT,
+              formatter TEXT
             )
           `,
     });

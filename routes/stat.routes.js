@@ -29,6 +29,7 @@ router.get("/:orgId/list", async (req, res) => {
         name: statName,
         id: statIds[statName]["statId"],
         category: statIds[statName]["category"],
+        formatter: statIds[statName]["formatter"],
       });
     }
     res.json({ success: true, data: states, message: "Success." });
@@ -60,16 +61,16 @@ router.get("/:orgId", async (req, res) => {
 // POST /api/stat/:orgId
 router.post("/:orgId", async (req, res) => {
   const { orgId } = req.params;
-  const { title, category } = req.body;
+  const { title, category, formatter } = req.body;
 
-  if (!orgId || !title || !category) {
+  if (!orgId || !title || !category || !formatter) {
     return res
       .status(400)
-      .json({ success: false, message: "Invalid orgId, title or category." });
+      .json({ success: false, message: "Invalid orgId, title, category or formatter." });
   }
 
   try {
-    const statId = await createStatItem(orgId, title, category);
+    const statId = await createStatItem(orgId, title, category, formatter);
     res.json({ success: true, statId, message: "Success." });
   } catch (error) {
     res.json({ success: false, statId: null, message: error.message });

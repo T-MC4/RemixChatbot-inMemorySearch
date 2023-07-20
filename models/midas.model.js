@@ -326,7 +326,7 @@ export async function getMidasStats(startDate, endDate, orgId) {
           WHERE date_rec < '${endDate}' -- End date
         )
         SELECT
-          date_rec AS "date",
+          to_char(to_date(date_rec), '%b %d') AS "date",
           COALESCE(closed_count, 0) AS "Closes",
           COALESCE(pif_count, 0) AS "PiF's",
           COALESCE(payplan_count, 0) AS "Pay Plan",

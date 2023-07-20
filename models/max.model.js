@@ -330,7 +330,7 @@ export async function getMaxStats(startDate, endDate, orgId) {
         WHERE date_rec < '${endDate}' -- End date
       )
       SELECT
-        to_date(date_rec) AS "date",
+        to_char(to_date(date_rec), '%b %d') AS "date",
         COALESCE(
           (SELECT COUNT(*) FROM LEAD WHERE to_date(CREATED_AT) = to_date(date_rec) AND ORG_ID = '${orgId}'),
           0) AS "Leads",
