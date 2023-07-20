@@ -229,7 +229,8 @@ Content-Type: application/json
 
 {
   "title": "New Stat Item",
-  "category": "Paid Ads"
+  "category": "Paid Ads",
+  "formatter": "currency",
 }
 
 ###
