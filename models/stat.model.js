@@ -100,7 +100,7 @@ export async function initState(orgId) {
       const binds = [];
       const stats = {};
       for (const stat of fixedStats) {
-        query += `(?, ?, ?, ?),`;
+        query += `(?, ?, ?, ?, ?),`;
         const id = uuidv4();
         binds.push(id, orgId, stat["title"], stat["category"], stat["formatter"]);
         stats[stat["title"]] = {
@@ -173,6 +173,7 @@ export async function getStatsId(orgId) {
 
 export async function getStateValues(startDate, endDate, orgId) {
   try {
+    await initState(orgId);
     const conn = await connectToSherlockSnowflake();
 
     // Create a date range table using a recursive CTE
