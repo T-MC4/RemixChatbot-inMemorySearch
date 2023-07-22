@@ -295,6 +295,11 @@ function convertMaxStats(rows) {
   if (index > -1) {
     keys.splice(index, 1);
   }
+  
+  index = keys.indexOf("abs_date");
+  if (index > -1) {
+    keys.splice(index, 1);
+  }
 
   // Iterating over each key and creating the desired format
   keys.forEach(function (key) {
@@ -307,6 +312,7 @@ function convertMaxStats(rows) {
       obj.data.push({
         date: item.date,
         value: item[key],
+        abs_date: item.abs_date,
       });
     });
 
@@ -331,6 +337,7 @@ export async function getMaxStats(startDate, endDate, orgId) {
       )
       SELECT
         to_char(to_date(date_rec), '%b %d') AS "date",
+        to_date(date_rec) AS "abs_date",
         COALESCE(
           (SELECT COUNT(*) FROM LEAD WHERE to_date(CREATED_AT) = to_date(date_rec) AND ORG_ID = '${orgId}'),
           0) AS "Leads",
@@ -349,8 +356,7 @@ export async function getMaxStats(startDate, endDate, orgId) {
       FROM
         date_range_table
       ORDER BY
-        "date" ASC;
-      
+        "abs_date" ASC;
         `,
     });
 

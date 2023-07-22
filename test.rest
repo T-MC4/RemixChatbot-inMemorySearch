@@ -209,16 +209,12 @@ Content-Type: application/json
 
 # Request Parameters
 @orgId = spiderman128
-@startDate = 2023-07-01
-@endDate = 2023-07-15
+@startDate = 2023-06-20
+@endDate = 2023-06-20
 
-GET {{base_url}}/api/stat/{{orgId}}
+GET {{base_url}}/api/stat/{{orgId}}?startDate={{startDate}}&endDate={{endDate}}
 Content-Type: application/json
 
-{
-  "startDate": "{{startDate}}",
-  "endDate": "{{endDate}}"
-}
 
 ###
 ### POST /api/stat/:orgId
