@@ -273,18 +273,11 @@ export async function getStates(startDate, endDate, orgId) {
     // Merge state values data
     for (const stateValue of stateValues) {
       const { name, data } = stateValue;
-      console.log(JSON.stringify(combinedData, 2));
-      console.log(name, "Data:");
-      console.log("Data:", JSON.stringify(data, 2));
-      console.log("Combined Data:", JSON.stringify(combinedData[name], 2));
-
       if (!combinedData[name]) {
         combinedData[name] = data;
-        console.log("Continuing");
         continue;
       }
 
-      console.log("Combining");
       for (const entry of data) {
         const { date, value, abs_date } = entry;
         const existingEntry = combinedData[name].find((item) => {
