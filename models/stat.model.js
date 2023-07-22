@@ -273,13 +273,13 @@ export async function getStates(startDate, endDate, orgId) {
     const combinedData = {};
 
     // Merge stats data
-    for (const stat of stats) {
+    for (const stat of stateValues) {
       const { name, data } = stat;
       combinedData[name] = data;
     }
 
     // Merge state values data
-    for (const stateValue of stateValues) {
+    for (const stateValue of stats) {
       const { name, data } = stateValue;
       if (!combinedData[name]) {
         combinedData[name] = data;
