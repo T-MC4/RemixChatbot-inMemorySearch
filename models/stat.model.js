@@ -148,11 +148,14 @@ export async function getStatsId(orgId) {
         statId,
         category,
         formatter,
-        isFixed
+        isFixed,
+        createdAt
       FROM
         Stats
       WHERE 
         orgId = '${orgId}'
+      ORDER BY
+        createdAt ASC;
       `,
     });
     const rows = await consumeStream(existingRecord.streamRows());
@@ -487,7 +490,8 @@ export async function createStatsTable() {
               title TEXT,
               category TEXT,
               formatter TEXT,
-              isFixed BOOLEAN
+              isFixed BOOLEAN,
+              createdAt DATE DEFAULT CURRENT_DATE
             )
           `,
     });
