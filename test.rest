@@ -198,7 +198,7 @@ Content-Type: application/json
 ### Stat
 ###
 
-GET {{deploy_url}}/api/stat/{{org_id}}/list
+GET {{base_url}}/api/stat/{{org_id}}/list
 Content-Type: application/json
 
 
@@ -220,20 +220,20 @@ Content-Type: application/json
 ### POST /api/stat/:orgId
 ###
 
-POST {{deploy_url}}/api/stat/{{org_id}}
+POST {{base_url}}/api/stat/{{org_id}}
 Content-Type: application/json
 
 {
   "title": "New Stat Item",
   "category": "Paid Ads",
-  "formatter": "currency",
+  "formatter": "fixedDecimalPointsFormatter"
 }
 
 ###
 ### PUT /api/stat/:statId/name
 ###
 
-PUT {{deploy_url}}/api/stat/{{stat_id}}/name
+PUT {{base_url}}/api/stat/{{stat_id}}/name
 Content-Type: application/json
 
 {
@@ -244,7 +244,7 @@ Content-Type: application/json
 ### PUT /api/stat/:orgId/:statId/value
 ###
 
-PUT {{deploy_url}}/api/stat/{{org_id}}/{{stat_id}}/value
+PUT {{base_url}}/api/stat/{{org_id}}/{{stat_id}}/value
 Content-Type: application/json
 
 {
@@ -256,4 +256,9 @@ Content-Type: application/json
 ### DELETE /api/stat/:orgId/:statId
 ###
 
-DELETE {{deploy_url}}/api/stat/{{org_id}}/{{stat_id}}
+POST {{base_url}}/api/stat/{{org_id}}/delete
+Content-Type: application/json
+
+{
+  "statIds": ["86488343-5d67-49c1-8f7a-92cca12258d7"]
+}
