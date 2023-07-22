@@ -491,7 +491,7 @@ export async function createStatsTable() {
               category TEXT,
               formatter TEXT,
               isFixed BOOLEAN,
-              createdAt DATE DEFAULT CURRENT_DATE
+              createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )
           `,
     });
