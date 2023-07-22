@@ -292,6 +292,11 @@ function convertMidasStats(rows) {
     keys.splice(index, 1);
   }
 
+  index = keys.indexOf("abs_date");
+  if (index > -1) {
+    keys.splice(index, 1);
+  }
+
   // Iterating over each key and creating the desired format
   keys.forEach(function (key) {
     var obj = {
@@ -303,6 +308,7 @@ function convertMidasStats(rows) {
       obj.data.push({
         date: item.date,
         value: item[key],
+        abs_date: item.abs_date,
       });
     });
 
@@ -327,6 +333,7 @@ export async function getMidasStats(startDate, endDate, orgId) {
         )
         SELECT
           to_char(to_date(date_rec), '%b %d') AS "date",
+          to_date(date_rec) AS "abs_date",
           COALESCE(closed_count, 0) AS "Closes",
           COALESCE(pif_count, 0) AS "PiF's",
           COALESCE(payplan_count, 0) AS "Pay Plan",
@@ -410,8 +417,7 @@ export async function getMidasStats(startDate, endDate, orgId) {
             )
           GROUP BY to_date(c.CREATED_AT)
         ) cash ON date_rec = cash.date
-        ORDER BY "date" ASC;
-      
+        ORDER BY "abs_date" ASC;
         `,
     });
 

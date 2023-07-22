@@ -102,7 +102,13 @@ export async function initState(orgId) {
       for (const stat of fixedStats) {
         query += `(?, ?, ?, ?, ?),`;
         const id = uuidv4();
-        binds.push(id, orgId, stat["title"], stat["category"], stat["formatter"]);
+        binds.push(
+          id,
+          orgId,
+          stat["title"],
+          stat["category"],
+          stat["formatter"]
+        );
         stats[stat["title"]] = {
           statId: id,
           category: stat["category"],
@@ -191,7 +197,8 @@ export async function getStateValues(startDate, endDate, orgId) {
           date_rec < '${endDate}' -- End date
       )
       SELECT
-        to_char(to_date(date_rec), '%b %d') AS "date",
+        DISTINCT to_char(to_date(date_rec), '%b %d') AS "date",
+        to_date(date_rec) AS "abs_date",
         COALESCE(state.value, 0) AS "statValue",
         COALESCE(state.title, 'No Title') AS "title"
       FROM
@@ -213,8 +220,7 @@ export async function getStateValues(startDate, endDate, orgId) {
       WHERE
         state.orgId = '${orgId}'
       ORDER BY
-        "date" ASC;
-      
+        "abs_date" ASC;
       `,
     });
 
@@ -224,12 +230,13 @@ export async function getStateValues(startDate, endDate, orgId) {
       const date = row["date"];
       const statValue = row["statValue"] || 0;
       const title = row["title"];
+      const abs_date = row["abs_date"];
       if (title !== null) {
         if (!stateValues[title]) {
           stateValues[title] = [];
         }
 
-        stateValues[title].push({ date, value: statValue });
+        stateValues[title].push({ date, value: statValue, abs_date });
       }
     }
 
@@ -254,6 +261,7 @@ export async function getStates(startDate, endDate, orgId) {
     const stats = await getStats(startDate, endDate, orgId);
     const stateValues = await getStateValues(startDate, endDate, orgId);
     const statIds = await getStatsId(orgId);
+
     const combinedData = {};
 
     // Merge stats data
@@ -271,18 +279,20 @@ export async function getStates(startDate, endDate, orgId) {
       }
 
       for (const entry of data) {
-        const { date, value } = entry;
+        const { date, value, abs_date } = entry;
         const existingEntry = combinedData[name].find((item) => {
-          return item.date === date;
+          return (
+            item.abs_date.getFormat("yyyy-mm-dd") ===
+            abs_date.getFormat("yyyy-mm--dd")
+          );
         });
         if (existingEntry) {
           existingEntry.value += value;
         } else {
-          combinedData[name].push({ date, value });
+          combinedData[name].push({ date, value, abs_date });
         }
       }
     }
-
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
       data: data.map(({ date, value }) => ({ date, [name]: value })),
