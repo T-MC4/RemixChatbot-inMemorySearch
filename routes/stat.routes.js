@@ -30,6 +30,7 @@ router.get("/:orgId/list", async (req, res) => {
         id: statIds[statName]["statId"],
         category: statIds[statName]["category"],
         formatter: statIds[statName]["formatter"],
+        isFixed: statIds[statName]["isFixed"],
       });
     }
     res.json({ success: true, data: states, message: "Success." });
@@ -64,9 +65,10 @@ router.post("/:orgId", async (req, res) => {
   const { title, category, formatter } = req.body;
 
   if (!orgId || !title || !category || !formatter) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid orgId, title, category or formatter." });
+    return res.status(400).json({
+      success: false,
+      message: "Invalid orgId, title, category or formatter.",
+    });
   }
 
   try {
@@ -116,19 +118,22 @@ router.put("/:orgId/:statId/value", async (req, res) => {
   }
 });
 
-// DELETE /api/stat/:orgId/:statId
-router.delete("/:orgId/:statId", async (req, res) => {
-  const { orgId, statId } = req.params;
+// POST /api/stat/:orgId/delete
+router.post("/:orgId/delete", async (req, res) => {
+  const { orgId } = req.params;
+  const { statIds = [] } = req.body;
 
-  if (!orgId || !statId) {
+  if (!orgId || !statIds.length) {
     return res
       .status(400)
-      .json({ success: false, message: "Invalid orgId or statId." });
+      .json({ success: false, message: "Invalid orgId or statIds." });
   }
 
   try {
-    await deleteStatItems(orgId, statId);
-    res.json({ success: true, message: "Success." });
+    if (await deleteStatItems(orgId, statIds)) {
+      return res.json({ success: true, message: "Success." });
+    }
+    return res.json({ success: false, message: "Cannot delete fixed stats." });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }

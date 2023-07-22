@@ -95,24 +95,26 @@ export async function initState(orgId) {
     if (rows.length < 17) {
       let query = `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title, category, formatter)
+      INSERT INTO Stats (statId, orgId, title, category, formatter, isFixed)
       VALUES `;
       const binds = [];
       const stats = {};
       for (const stat of fixedStats) {
-        query += `(?, ?, ?, ?, ?),`;
+        query += `(?, ?, ?, ?, ?, ?),`;
         const id = uuidv4();
         binds.push(
           id,
           orgId,
           stat["title"],
           stat["category"],
-          stat["formatter"]
+          stat["formatter"],
+          true
         );
         stats[stat["title"]] = {
           statId: id,
           category: stat["category"],
           formatter: stat["formatter"],
+          isFixed: true,
         };
       }
       query = query.slice(0, -1);
@@ -145,7 +147,8 @@ export async function getStatsId(orgId) {
         title,
         statId,
         category,
-        formatter
+        formatter,
+        isFixed
       FROM
         Stats
       WHERE 
@@ -161,10 +164,12 @@ export async function getStatsId(orgId) {
       const statId = row["STATID"];
       const category = row["CATEGORY"];
       const formatter = row["FORMATTER"];
+      const isFixed = row["ISFIXED"];
       statIds[title] = {
         statId,
         category,
         formatter,
+        isFixed,
       };
     }
 
@@ -300,6 +305,7 @@ export async function getStates(startDate, endDate, orgId) {
       id: statIds[name]["statId"],
       category: statIds[name]["category"],
       formatter: statIds[name]["formatter"],
+      isFixed: statIds[name]["isFixed"],
     }));
 
     // console.log("Combined Result:", result);
@@ -321,9 +327,9 @@ export async function createStatItem(orgId, title, category, formatter) {
     const statement = conn.execute({
       sqlText: `
       -- Query to create a stat item
-      INSERT INTO Stats (statId, orgId, title, category, formatter)
-      VALUES (?, ?, ?, ?)`,
-      binds: [statId, orgId, title, category, formatter],
+      INSERT INTO Stats (statId, orgId, title, category, formatter, isFixed)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      binds: [statId, orgId, title, category, formatter, false],
     });
     console.log("Stat item created successfully.");
     return statId;
@@ -423,16 +429,45 @@ export async function updateStatItemValue(orgId, statId, value, date) {
   }
 }
 
-export async function deleteStatItems(orgId, statId) {
+export async function deleteStatItems(orgId, deleteStatIds) {
   try {
+    
+    const Ids = await getStatsId(orgId);
+    const fixedStatIds = Object.values(Ids).filter((stat) => stat.isFixed);
+    const fixedStatIdsArray = fixedStatIds.map((stat) => stat.statId);
+    const isFixed = deleteStatIds.some((stat) => fixedStatIdsArray.includes(stat));
+    
+    if (isFixed) {
+      return false;
+    }
+
     const conn = await connectToSherlockSnowflake();
-    const statement = conn.execute({
-      sqlText: `
+
+    const placeholders = deleteStatIds.map(() => "?").join(",");
+
+    const statDeleteQuery = `
       -- Query to delete stat items
       DELETE FROM Stats
-      WHERE orgId = '${orgId}' AND statId = '${statId}'`,
+      WHERE orgId = ? AND statId IN (${placeholders})`;
+    const statValueDeleteQuery = `
+      -- Query to delete stat items
+      DELETE FROM StatValues
+      WHERE statId IN (${placeholders})`;
+
+    const values = [orgId, ...deleteStatIds];
+
+    const statDeleteStatement = conn.execute({
+      sqlText: statDeleteQuery,
+      binds: values,
     });
+
+    const statValueDeleteStatement = conn.execute({
+      sqlText: statValueDeleteQuery,
+      binds: values,
+    });
+
     console.log("Stat items deleted successfully.");
+    return true;
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
@@ -451,7 +486,8 @@ export async function createStatsTable() {
               orgId VARCHAR(255),
               title TEXT,
               category TEXT,
-              formatter TEXT
+              formatter TEXT,
+              isFixed BOOLEAN
             )
           `,
     });
