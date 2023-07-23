@@ -344,7 +344,7 @@ export async function createStatItem(orgId, title, category, formatter) {
   }
 }
 
-export async function updateStatItemName(statId, title) {
+export async function updateStatItemName(orgId, statId, title) {
   try {
     const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
@@ -352,7 +352,7 @@ export async function updateStatItemName(statId, title) {
       -- Query to update stat item name
       UPDATE Stats 
       SET title = '${title}'
-      WHERE statId = '${statId}'`,
+      WHERE statId = '${statId} AND orgId = '${orgId}'`,
     });
     console.log("Stat item name updated successfully.");
   } catch (error) {
@@ -363,7 +363,7 @@ export async function updateStatItemName(statId, title) {
   }
 }
 
-export async function updateStatItemFormatter(statId, formatter) {
+export async function updateStatItemFormatter(orgId, statId, formatter) {
   try {
     const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
@@ -371,7 +371,7 @@ export async function updateStatItemFormatter(statId, formatter) {
       -- Query to update stat item name
       UPDATE Stats 
       SET formatter = '${formatter}'
-      WHERE statId = '${statId}'`,
+      WHERE statId = '${statId} AND orgId = '${orgId}'`,
     });
     console.log("Stat item formatter updated successfully.");
   } catch (error) {

@@ -237,14 +237,14 @@ PUT {{base_url}}/api/stat/name/{{org_id}}/{{stat_id}}
 Content-Type: application/json
 
 {
-  "title": "Robo Stat Item"
+  "value": "Robo Stat Item"
 }
 
 PUT {{base_url}}/api/stat/formatter/{{org_id}}/{{stat_id}}
 Content-Type: application/json
 
 {
-  "formatter": "fixedDecimalPointsFormatter"
+  "value": "fixedDecimalPointsFormatter"
 }
 
 ###

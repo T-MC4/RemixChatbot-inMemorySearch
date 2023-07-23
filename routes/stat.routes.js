@@ -6,6 +6,7 @@ import {
   updateStatItemName,
   updateStatItemValue,
   deleteStatItems,
+  updateStatItemFormatter,
 } from "../models/stat.model.js";
 
 const router = express.Router();
@@ -81,17 +82,17 @@ router.post("/:orgId", async (req, res) => {
 
 // PUT /api/stat/name/:orgId/:statId
 router.put("/name/:orgId/:statId", async (req, res) => {
-  const { statId } = req.params;
-  const { title } = req.body;
+  const { statId, orgId } = req.params;
+  const { value } = req.body;
 
-  if (!statId || !title) {
+  if (!statId || !value) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid  statId, or title." });
   }
 
   try {
-    await updateStatItemName(statId, title);
+    await updateStatItemName(orgId, statId, value);
     res.json({ success: true, message: "Success." });
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -100,17 +101,17 @@ router.put("/name/:orgId/:statId", async (req, res) => {
 
 // PUT /api/stat/formatter/:orgId/:statId
 router.put("/formatter/:orgId/:statId", async (req, res) => {
-  const { statId } = req.params;
-  const { formatter } = req.body;
+  const { statId, orgId } = req.params;
+  const { value } = req.body;
 
-  if (!statId || !formatter) {
+  if (!statId || !value) {
     return res
       .status(400)
       .json({ success: false, message: "Invalid  statId, or formatter." });
   }
 
   try {
-    await updateStatItemFormatter(statId, formatter);
+    await updateStatItemFormatter(orgId, statId, value);
     res.json({ success: true, message: "Success." });
   } catch (error) {
     res.json({ success: false, message: error.message });
