@@ -344,7 +344,7 @@ export async function createStatItem(orgId, title, category, formatter) {
   }
 }
 
-export async function updateStatItemName(statId, title) {
+export async function updateStatItemName(orgId, statId, title) {
   try {
     const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
@@ -352,9 +352,28 @@ export async function updateStatItemName(statId, title) {
       -- Query to update stat item name
       UPDATE Stats 
       SET title = '${title}'
-      WHERE statId = '${statId}'`,
+      WHERE statId = '${statId} AND orgId = '${orgId}'`,
     });
     console.log("Stat item name updated successfully.");
+  } catch (error) {
+    console.error(
+      "Failed to execute statement due to the following error: " + err.message
+    );
+    throw err;
+  }
+}
+
+export async function updateStatItemFormatter(orgId, statId, formatter) {
+  try {
+    const conn = await connectToSherlockSnowflake();
+    const statement = conn.execute({
+      sqlText: `
+      -- Query to update stat item name
+      UPDATE Stats 
+      SET formatter = '${formatter}'
+      WHERE statId = '${statId} AND orgId = '${orgId}'`,
+    });
+    console.log("Stat item formatter updated successfully.");
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
@@ -434,12 +453,13 @@ export async function updateStatItemValue(orgId, statId, value, date) {
 
 export async function deleteStatItems(orgId, deleteStatIds) {
   try {
-    
     const Ids = await getStatsId(orgId);
     const fixedStatIds = Object.values(Ids).filter((stat) => stat.isFixed);
     const fixedStatIdsArray = fixedStatIds.map((stat) => stat.statId);
-    const isFixed = deleteStatIds.some((stat) => fixedStatIdsArray.includes(stat));
-    
+    const isFixed = deleteStatIds.some((stat) =>
+      fixedStatIdsArray.includes(stat)
+    );
+
     if (isFixed) {
       return false;
     }
