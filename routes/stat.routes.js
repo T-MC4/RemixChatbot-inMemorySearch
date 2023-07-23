@@ -79,8 +79,8 @@ router.post("/:orgId", async (req, res) => {
   }
 });
 
-// PUT /api/stat/:statId/name
-router.put("/:statId/name", async (req, res) => {
+// PUT /api/stat/name/:orgId/:statId
+router.put("/name/:orgId/:statId", async (req, res) => {
   const { statId } = req.params;
   const { title } = req.body;
 
@@ -92,6 +92,25 @@ router.put("/:statId/name", async (req, res) => {
 
   try {
     await updateStatItemName(statId, title);
+    res.json({ success: true, message: "Success." });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+});
+
+// PUT /api/stat/formatter/:orgId/:statId
+router.put("/formatter/:orgId/:statId", async (req, res) => {
+  const { statId } = req.params;
+  const { formatter } = req.body;
+
+  if (!statId || !formatter) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid  statId, or formatter." });
+  }
+
+  try {
+    await updateStatItemFormatter(statId, formatter);
     res.json({ success: true, message: "Success." });
   } catch (error) {
     res.json({ success: false, message: error.message });

@@ -363,6 +363,25 @@ export async function updateStatItemName(statId, title) {
   }
 }
 
+export async function updateStatItemFormatter(statId, formatter) {
+  try {
+    const conn = await connectToSherlockSnowflake();
+    const statement = conn.execute({
+      sqlText: `
+      -- Query to update stat item name
+      UPDATE Stats 
+      SET formatter = '${formatter}'
+      WHERE statId = '${statId}'`,
+    });
+    console.log("Stat item formatter updated successfully.");
+  } catch (error) {
+    console.error(
+      "Failed to execute statement due to the following error: " + err.message
+    );
+    throw err;
+  }
+}
+
 export async function getFinalUpdateValue(orgId, statId, value, date) {
   const conn = await connectToSherlockSnowflake();
   const statTitle = conn.execute({
@@ -434,12 +453,13 @@ export async function updateStatItemValue(orgId, statId, value, date) {
 
 export async function deleteStatItems(orgId, deleteStatIds) {
   try {
-    
     const Ids = await getStatsId(orgId);
     const fixedStatIds = Object.values(Ids).filter((stat) => stat.isFixed);
     const fixedStatIdsArray = fixedStatIds.map((stat) => stat.statId);
-    const isFixed = deleteStatIds.some((stat) => fixedStatIdsArray.includes(stat));
-    
+    const isFixed = deleteStatIds.some((stat) =>
+      fixedStatIdsArray.includes(stat)
+    );
+
     if (isFixed) {
       return false;
     }
