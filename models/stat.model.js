@@ -380,6 +380,15 @@ export async function createStatItem(orgId, title, category, formatter) {
 
 export async function updateStatItemName(orgId, statId, title) {
   try {
+    const Ids = await getStatsId(orgId);
+    const fixedStatIds = Object.values(Ids).filter((stat) => stat.isFixed);
+    const fixedStatIdsArray = fixedStatIds.map((stat) => stat.statId);
+    const isFixed = fixedStatIdsArray.includes(statId);
+    
+    if (isFixed) {
+      return false;
+    }
+
     const conn = await connectToSherlockSnowflake();
     const statement = conn.execute({
       sqlText: `
