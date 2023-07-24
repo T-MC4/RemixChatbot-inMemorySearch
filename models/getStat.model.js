@@ -50,7 +50,7 @@ export async function getStatsByName(startDate, endDate, orgId, statName) {
     } else if (statName === "Cash") {
       data = await getCashStats(startDate, endDate, orgId);
     } else {
-      data = -1;
+      return -1;
     }
 
     return data[0];
