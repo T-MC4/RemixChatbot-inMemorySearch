@@ -189,20 +189,27 @@ function addValuesByDate(data) {
   let dateWiseSum = {};
 
   for (let entry of data) {
+    let abs_date = entry.abs_date;
     let date = entry.date;
     let value = entry.value;
 
     if (date in dateWiseSum) {
-      dateWiseSum[date] += value;
+      dateWiseSum[abs_date] = {
+        value: dateWiseSum[abs_date].value + value,
+        date,
+      };
     } else {
-      dateWiseSum[date] = value;
+      dateWiseSum[abs_date] = {
+        value,
+        date,
+      };
     }
   }
 
   // Convert the dateWiseSum object back to an array of objects
   let result = Object.keys(dateWiseSum).map((date) => ({
-    date,
-    value: dateWiseSum[date],
+    date: dateWiseSum[date].date,
+    value: dateWiseSum[date].value,
   }));
 
   return result;
@@ -324,6 +331,7 @@ export async function getStates(startDate, endDate, orgId) {
         }
       }
     }
+
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
       data: addValuesByDate(data).map(({ date, value }) => ({
