@@ -352,7 +352,7 @@ export async function updateStatItemName(orgId, statId, title) {
       -- Query to update stat item name
       UPDATE Stats 
       SET title = '${title}'
-      WHERE statId = '${statId} AND orgId = '${orgId}'`,
+      WHERE statId = '${statId}' AND orgId = '${orgId}'`,
     });
     console.log("Stat item name updated successfully.");
   } catch (error) {
@@ -371,7 +371,7 @@ export async function updateStatItemFormatter(orgId, statId, formatter) {
       -- Query to update stat item name
       UPDATE Stats 
       SET formatter = '${formatter}'
-      WHERE statId = '${statId} AND orgId = '${orgId}'`,
+      WHERE statId = '${statId}' AND orgId = '${orgId}'`,
     });
     console.log("Stat item formatter updated successfully.");
   } catch (error) {
