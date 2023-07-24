@@ -29,28 +29,31 @@ export async function getStats(startDate, endDate, orgId) {
 
 export async function getStatsByName(startDate, endDate, orgId, statName) {
   try {
-    switch (statName) {
-      case "Leads":
-        return await getLeadStats(startDate, endDate, orgId)[0];
-      case "Dials":
-        return await getDialStats(startDate, endDate, orgId)[0];
-      case "1-Minute Conversations":
-        return await getOneMinConversionStats(startDate, endDate, orgId)[0];
-      case "Sets":
-        return await getSetsStats(startDate, endDate, orgId)[0];
-      case "DQ's":
-        return await getDQStats(startDate, endDate, orgId)[0];
-      case "Closes":
-        return await getClosesStats(startDate, endDate, orgId)[0];
-      case "PiF's":
-        return await getPiFStats(startDate, endDate, orgId)[0];
-      case "Pay Plan":
-        return await getPayPlanStats(startDate, endDate, orgId)[0];
-      case "Cash":
-        return await getCashStats(startDate, endDate, orgId)[0];
-      default:
-        return -1;
+    let data = -1;
+
+    if (statName === "Leads") {
+      data = await getLeadStats(startDate, endDate, orgId);
+    } else if (statName === "Dials") {
+      data = await getDialStats(startDate, endDate, orgId);
+    } else if (statName === "1-Minute Conversations") {
+      data = await getOneMinConversionStats(startDate, endDate, orgId);
+    } else if (statName === "Sets") {
+      data = await getSetsStats(startDate, endDate, orgId);
+    } else if (statName === "DQ's") {
+      data = await getDQStats(startDate, endDate, orgId);
+    } else if (statName === "Closes") {
+      data = await getClosesStats(startDate, endDate, orgId);
+    } else if (statName === "PiF's") {
+      data = await getPiFStats(startDate, endDate, orgId);
+    } else if (statName === "Pay Plan") {
+      data = await getPayPlanStats(startDate, endDate, orgId);
+    } else if (statName === "Cash") {
+      data = await getCashStats(startDate, endDate, orgId);
+    } else {
+      data = -1;
     }
+
+    return data[0];
   } catch (err) {
     console.error("Failed to retrieve stats:", err);
     throw err;

@@ -185,6 +185,36 @@ export async function getStatsId(orgId) {
   }
 }
 
+function addValuesByDate(data) {
+  let dateWiseSum = {};
+
+  for (let entry of data) {
+    let abs_date = entry.abs_date;
+    let date = entry.date;
+    let value = entry.value;
+
+    if (date in dateWiseSum) {
+      dateWiseSum[abs_date] = {
+        value: dateWiseSum[abs_date].value + value,
+        date,
+      };
+    } else {
+      dateWiseSum[abs_date] = {
+        value,
+        date,
+      };
+    }
+  }
+
+  // Convert the dateWiseSum object back to an array of objects
+  let result = Object.keys(dateWiseSum).map((date) => ({
+    date: dateWiseSum[date].date,
+    value: dateWiseSum[date].value,
+  }));
+
+  return result;
+}
+
 export async function getStateValues(startDate, endDate, orgId) {
   try {
     await initState(orgId);
@@ -205,7 +235,7 @@ export async function getStateValues(startDate, endDate, orgId) {
           date_rec < '${endDate}' -- End date
       )
       SELECT
-        DISTINCT to_char(to_date(date_rec), '%b %d') AS "date",
+        to_char(to_date(date_rec), '%b %d') AS "date",
         to_date(date_rec) AS "abs_date",
         COALESCE(state.value, 0) AS "statValue",
         COALESCE(state.title, 'No Title') AS "title"
@@ -301,9 +331,13 @@ export async function getStates(startDate, endDate, orgId) {
         }
       }
     }
+
     const result = Object.entries(combinedData).map(([name, data]) => ({
       name,
-      data: data.map(({ date, value }) => ({ date, [name]: value })),
+      data: addValuesByDate(data).map(({ date, value }) => ({
+        date,
+        [name]: value,
+      })),
       sum: data.reduce((acc, { value = 0 }) => acc + value, 0),
       id: statIds[name]["statId"],
       category: statIds[name]["category"],
@@ -401,7 +435,7 @@ export async function getFinalUpdateValue(orgId, statId, value, date) {
   if (data === -1) {
     return value;
   } else {
-    return value - data[0]["value"];
+    return value - data["value"];
   }
 }
 
@@ -427,7 +461,7 @@ export async function updateStatItemValue(orgId, statId, value, date) {
         sqlText: `
         UPDATE StatValues
         SET value = ${newValue}
-        WHERE statValueId = ${statValueId}
+        WHERE statValueId = '${statValueId}'
         `,
       });
       console.log("Stat item value updated successfully.");
