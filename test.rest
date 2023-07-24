@@ -212,7 +212,7 @@ Content-Type: application/json
 @startDate = 2023-07-24
 @endDate = 2023-07-24
 
-GET {{base_url}}/api/stat/{{orgId}}?startDate={{startDate}}&endDate={{endDate}}
+GET {{deploy_url}}/api/stat/{{orgId}}?startDate={{startDate}}&endDate={{endDate}}
 Content-Type: application/json
 
 

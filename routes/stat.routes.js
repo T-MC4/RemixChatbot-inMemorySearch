@@ -92,8 +92,13 @@ router.put("/name/:orgId/:statId", async (req, res) => {
   }
 
   try {
-    await updateStatItemName(orgId, statId, value);
-    res.json({ success: true, message: "Success." });
+    if (await updateStatItemName(orgId, statId, value)) {
+      return res.json({ success: true, message: "Success." });
+    }
+    return res.json({
+      success: false,
+      message: "Cannot update fixed stats name.",
+    });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
