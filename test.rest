@@ -171,7 +171,7 @@ DELETE {{base_url}}/api/chat/{{user_id}}/{{chat_id}}
 
 @org_id = spiderman128
 @filter_id = d49be3a2-dac8-496b-98d8-ad3df59307b6
-@stat_id = 447426d7-5040-4991-8698-0d18265b496c
+@stat_id = 22c3538c-dc06-4bb8-8606-80bc195f4b8c
 
 ###
 ### Filter 
@@ -209,8 +209,8 @@ Content-Type: application/json
 
 # Request Parameters
 @orgId = spiderman128
-@startDate = 2023-07-24
-@endDate = 2023-07-24
+@startDate = 2023-07-10
+@endDate = 2023-07-10
 
 GET {{deploy_url}}/api/stat/{{orgId}}?startDate={{startDate}}&endDate={{endDate}}
 Content-Type: application/json
@@ -253,21 +253,21 @@ Content-Type: application/json
 ### PUT /api/stat/:orgId/:statId/value
 ###
 
-PUT {{base_url}}/api/stat/{{org_id}}/{{stat_id}}/value
+PUT {{deploy_url}}/api/stat/{{org_id}}/{{stat_id}}/value
 Content-Type: application/json
 
 {
-  "value": 101,
-  "date": "2023-07-24"
+  "value": 770,
+  "date": "2023-07-10"
 }
 
 ###
 ### DELETE /api/stat/:orgId/:statId
 ###
 
-POST {{base_url}}/api/stat/{{org_id}}/delete
+POST {{deploy_url}}/api/stat/{{org_id}}/delete
 Content-Type: application/json
 
 {
-  "statIds": ["86488343-5d67-49c1-8f7a-92cca12258d7"]
+  "statIds": ["21fdc6bf-7c8f-4ba5-8000-4f705d0b3ce0"]
 }
