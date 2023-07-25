@@ -128,7 +128,7 @@ router.put("/:orgId/:statId/value", async (req, res) => {
   const { statId, orgId } = req.params;
   const { value, date } = req.body;
 
-  if (!statId || !value || !date || !orgId) {
+  if (!statId || value === undefined || !date || !orgId) {
     return res.status(400).json({
       success: false,
       message: "Invalid statId, orgId, value, or date.",
