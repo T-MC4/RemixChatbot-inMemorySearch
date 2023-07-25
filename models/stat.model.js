@@ -345,8 +345,6 @@ export async function getStates(startDate, endDate, orgId) {
       isFixed: statIds[name]["isFixed"],
     }));
 
-    // console.log("Combined Result:", result);
-
     return result;
   } catch (err) {
     console.error("Failed to retrieve states:", err);
@@ -398,6 +396,7 @@ export async function updateStatItemName(orgId, statId, title) {
       WHERE statId = '${statId}' AND orgId = '${orgId}'`,
     });
     console.log("Stat item name updated successfully.");
+    return true;
   } catch (error) {
     console.error(
       "Failed to execute statement due to the following error: " + err.message
