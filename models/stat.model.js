@@ -332,17 +332,17 @@ export async function getStates(startDate, endDate, orgId) {
       }
     }
 
-    const result = Object.entries(combinedData).map(([name, data]) => ({
+    const result = Object.entries(statIds).map(([name, statData]) => ({
       name,
-      data: addValuesByDate(data).map(({ date, value }) => ({
+      data: addValuesByDate(combinedData[name]).map(({ date, value }) => ({
         date,
         [name]: value,
       })),
-      sum: data.reduce((acc, { value = 0 }) => acc + value, 0),
-      id: statIds[name]["statId"],
-      category: statIds[name]["category"],
-      formatter: statIds[name]["formatter"],
-      isFixed: statIds[name]["isFixed"],
+      sum: combinedData[name].reduce((acc, { value = 0 }) => acc + value, 0),
+      id: statData["statId"],
+      category: statData["category"],
+      formatter: statData["formatter"],
+      isFixed: statData["isFixed"],
     }));
 
     return result;
@@ -382,7 +382,7 @@ export async function updateStatItemName(orgId, statId, title) {
     const fixedStatIds = Object.values(Ids).filter((stat) => stat.isFixed);
     const fixedStatIdsArray = fixedStatIds.map((stat) => stat.statId);
     const isFixed = fixedStatIdsArray.includes(statId);
-    
+
     if (isFixed) {
       return false;
     }
