@@ -118,10 +118,11 @@ export async function initState(orgId) {
         };
       }
       query = query.slice(0, -1);
-      conn.execute({
+      const statement = conn.execute({
         sqlText: query,
         binds,
       });
+      await consumeStream(statement.streamRows());
       console.log("Stats initialized successfully.");
       return stats;
     }
@@ -366,6 +367,8 @@ export async function createStatItem(orgId, title, category, formatter) {
       VALUES (?, ?, ?, ?, ?, ?)`,
       binds: [statId, orgId, title, category, formatter, false],
     });
+    await consumeStream(statement.streamRows());
+
     console.log("Stat item created successfully.");
     return statId;
   } catch (error) {
@@ -395,6 +398,8 @@ export async function updateStatItemName(orgId, statId, title) {
       SET title = '${title}'
       WHERE statId = '${statId}' AND orgId = '${orgId}'`,
     });
+    await consumeStream(statement.streamRows());
+
     console.log("Stat item name updated successfully.");
     return true;
   } catch (error) {
@@ -415,6 +420,8 @@ export async function updateStatItemFormatter(orgId, statId, formatter) {
       SET formatter = '${formatter}'
       WHERE statId = '${statId}' AND orgId = '${orgId}'`,
     });
+    await consumeStream(statement.streamRows());
+
     console.log("Stat item formatter updated successfully.");
   } catch (error) {
     console.error(
@@ -525,11 +532,13 @@ export async function deleteStatItems(orgId, deleteStatIds) {
       sqlText: statDeleteQuery,
       binds: values,
     });
-
+    await consumeStream(statDeleteStatement.streamRows());
+    
     const statValueDeleteStatement = conn.execute({
       sqlText: statValueDeleteQuery,
       binds: values,
     });
+    await consumeStream(statValueDeleteStatement.streamRows());
 
     console.log("Stat items deleted successfully.");
     return true;
@@ -575,7 +584,7 @@ export async function createStatValuesTable() {
               CREATE TABLE IF NOT EXISTS StatValues (
                 statValueId VARCHAR(255) PRIMARY KEY,
                 statId VARCHAR(255),
-                value NUMBER,
+                value REAL,
                 inDate DATE
               )
             `,

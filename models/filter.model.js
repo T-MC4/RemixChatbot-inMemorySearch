@@ -46,6 +46,7 @@ export async function createCustomFilter(userId, title, options) {
       SELECT ?, ?, ?, PARSE_JSON(?)`,
       binds: [filterId, userId, title, JSON.stringify(options)],
     });
+    await consumeStream(statement.streamRows());
     console.log("Custom filter created successfully.");
     return filterId;
   } catch (err) {
@@ -65,6 +66,7 @@ export async function deleteCustomFilter(userId, filterId) {
       DELETE FROM Filters 
       WHERE userId = '${userId}' AND filterId = '${filterId}'`,
     });
+    await consumeStream(statement.streamRows());
     console.log("Custom filter deleted successfully.");
     return true;
   } catch (err) {
