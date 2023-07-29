@@ -1,4 +1,7 @@
-import { connectToSherlockSnowflake, consumeStream } from "../utils/snowflakeUtils.js";
+import {
+  connectToSherlockSnowflake,
+  consumeStream,
+} from "../utils/snowflakeUtils.js";
 import { v4 as uuidv4 } from "uuid";
 
 export async function getChatList(userId) {
@@ -64,6 +67,11 @@ export async function getChatData(userId, chatId) {
     });
 
     const listRows = await consumeStream(chatListStatement.streamRows());
+
+    if (listRows.length === 0) {
+      throw new Error("Chat not found.");
+    }
+    
     const list = listRows[0];
     const fromDate = list["FROMDATE"];
     const toDate = list["TODATE"];
@@ -95,12 +103,13 @@ export async function createChat(userId, from, to, chatName) {
   try {
     const conn = await connectToSherlockSnowflake();
     const chatId = uuidv4(); // Function to generate a unique UUID
-    const statement = conn.execute({
+    const statement = await conn.execute({
       sqlText: `
         -- Query to create a chat
         INSERT INTO ChatList (userId, chatId, chatName, fromDate, toDate)
-        VALUES ('${userId}', '${chatId}', '${chatName}', '${from}', '${to}');
+        VALUES (?, ?, ?, ?, ?);
       `,
+      binds: [userId, chatId, chatName, from, to],
     });
     console.log("Chat created with ID:", chatId);
     return chatId;
