@@ -187,8 +187,6 @@ export async function deleteChat(userId, chatId) {
         WHERE userId = '${userId}' AND chatId = '${chatId}';
       `,
     });
-    await consumeStream(deleteChatList.streamRows());
-    await consumeStream(deleteChatData.streamRows());
     
     console.log("Chat deleted successfully.");
     return true;

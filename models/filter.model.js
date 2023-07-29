@@ -66,7 +66,6 @@ export async function deleteCustomFilter(userId, filterId) {
       DELETE FROM Filters 
       WHERE userId = '${userId}' AND filterId = '${filterId}'`,
     });
-    await consumeStream(statement.streamRows());
     console.log("Custom filter deleted successfully.");
     return true;
   } catch (err) {

@@ -479,6 +479,7 @@ export async function updateStatItemValue(orgId, statId, value, date) {
         WHERE statValueId = '${statValueId}'
         `,
       });
+      await consumeStream(statement.streamRows());
       console.log("Stat item value updated successfully.");
     } else {
       // Insert a new record
@@ -490,6 +491,7 @@ export async function updateStatItemValue(orgId, statId, value, date) {
         `,
         binds: [statValueId, statId, newValue, date],
       });
+      await consumeStream(statement.streamRows());
       console.log("New stat item value inserted successfully.");
     }
   } catch (error) {
@@ -532,13 +534,11 @@ export async function deleteStatItems(orgId, deleteStatIds) {
       sqlText: statDeleteQuery,
       binds: values,
     });
-    await consumeStream(statDeleteStatement.streamRows());
-    
+
     const statValueDeleteStatement = conn.execute({
       sqlText: statValueDeleteQuery,
       binds: values,
     });
-    await consumeStream(statValueDeleteStatement.streamRows());
 
     console.log("Stat items deleted successfully.");
     return true;
