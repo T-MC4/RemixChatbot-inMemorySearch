@@ -37,9 +37,11 @@ let maxConnection = null;
 let midasConnection = null;
 
 export async function connectToSherlockSnowflake() {
-  const is_valid = sherlockConnection.isValidAsync();
-  if (sherlockConnection && is_valid) {
-    return sherlockConnection;
+  if (sherlockConnection) {
+    const is_valid = sherlockConnection.isValidAsync();
+    if (is_valid) {
+      return sherlockConnection;
+    }
   }
 
   sherlockConnection = snowflake.createConnection(connSherlockOptions);
@@ -53,9 +55,11 @@ export async function connectToSherlockSnowflake() {
 }
 
 export async function connectToMaxSnowflake() {
-  const is_valid = maxConnection.isValidAsync();
-  if (maxConnection && is_valid) {
-    return maxConnection;
+  if (maxConnection) {
+    const is_valid = maxConnection.isValidAsync();
+    if (is_valid) {
+      return maxConnection;
+    }
   }
 
   maxConnection = snowflake.createConnection(connMaxOptions);
@@ -69,9 +73,11 @@ export async function connectToMaxSnowflake() {
 }
 
 export async function connectToMidasSnowflake() {
-  const is_valid = midasConnection.isValidAsync();
-  if (midasConnection && is_valid) {
-    return midasConnection;
+  if (midasConnection) {
+    const is_valid = midasConnection.isValidAsync();
+    if (is_valid) {
+      return midasConnection;
+    }
   }
 
   midasConnection = snowflake.createConnection(connMidasOptions);
