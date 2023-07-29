@@ -71,7 +71,7 @@ export async function getChatData(userId, chatId) {
     if (listRows.length === 0) {
       throw new Error("Chat not found.");
     }
-    
+
     const list = listRows[0];
     const fromDate = list["FROMDATE"];
     const toDate = list["TODATE"];
@@ -111,6 +111,8 @@ export async function createChat(userId, from, to, chatName) {
       `,
       binds: [userId, chatId, chatName, from, to],
     });
+    await consumeStream(statement.streamRows());
+
     console.log("Chat created with ID:", chatId);
     return chatId;
   } catch (err) {
@@ -132,6 +134,7 @@ export async function pushMessage(userId, chatId, isIn, text) {
       `,
       binds: [userId, chatId, isIn, text],
     });
+    await consumeStream(statement.streamRows());
 
     console.log("Message pushed successfully.");
     return true;
@@ -155,6 +158,7 @@ export async function updateChatName(userId, chatId, chatName) {
         WHERE userId = '${userId}' AND chatId = '${chatId}';
       `,
     });
+    await consumeStream(statement.streamRows());
 
     console.log("Chat name updated successfully.");
     return true;
@@ -183,7 +187,9 @@ export async function deleteChat(userId, chatId) {
         WHERE userId = '${userId}' AND chatId = '${chatId}';
       `,
     });
-
+    await consumeStream(deleteChatList.streamRows());
+    await consumeStream(deleteChatData.streamRows());
+    
     console.log("Chat deleted successfully.");
     return true;
   } catch (err) {
