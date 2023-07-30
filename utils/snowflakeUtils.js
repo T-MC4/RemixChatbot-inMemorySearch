@@ -33,20 +33,25 @@ const connMidasOptions = {
 };
 
 let sherlockConnection = null;
+let sherlockConnectionTimestamp = null;
+
 let maxConnection = null;
+let maxConnectionTimestamp = null;
+
 let midasConnection = null;
+let midasConnectionTimestamp = null;
+
+const CONNECTION_EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export async function connectToSherlockSnowflake() {
-  if (sherlockConnection) {
-    const is_valid = sherlockConnection.isValidAsync();
-    if (is_valid) {
-      return sherlockConnection;
-    }
+  if (sherlockConnection && isConnectionValid(sherlockConnectionTimestamp)) {
+    return sherlockConnection;
   }
 
   sherlockConnection = snowflake.createConnection(connSherlockOptions);
   try {
     await sherlockConnection.connect();
+    updateConnectionTimestamp('sherlock');
     return sherlockConnection;
   } catch (err) {
     sherlockConnection = null;
@@ -55,16 +60,14 @@ export async function connectToSherlockSnowflake() {
 }
 
 export async function connectToMaxSnowflake() {
-  if (maxConnection) {
-    const is_valid = maxConnection.isValidAsync();
-    if (is_valid) {
-      return maxConnection;
-    }
+  if (maxConnection && isConnectionValid(maxConnectionTimestamp)) {
+    return maxConnection;
   }
 
   maxConnection = snowflake.createConnection(connMaxOptions);
   try {
     await maxConnection.connect();
+    updateConnectionTimestamp('max');
     return maxConnection;
   } catch (err) {
     maxConnection = null;
@@ -73,20 +76,46 @@ export async function connectToMaxSnowflake() {
 }
 
 export async function connectToMidasSnowflake() {
-  if (midasConnection) {
-    const is_valid = midasConnection.isValidAsync();
-    if (is_valid) {
-      return midasConnection;
-    }
+  if (midasConnection && isConnectionValid(midasConnectionTimestamp)) {
+    return midasConnection;
   }
 
   midasConnection = snowflake.createConnection(connMidasOptions);
   try {
     await midasConnection.connect();
+    updateConnectionTimestamp('midas');
     return midasConnection;
   } catch (err) {
     midasConnection = null;
     throw err;
+  }
+}
+
+function isConnectionValid(timestamp) {
+  if (!timestamp) {
+    return false;
+  }
+
+  const currentTime = new Date().getTime();
+  const connectionTime = timestamp.getTime();
+  const elapsedMilliseconds = currentTime - connectionTime;
+
+  return elapsedMilliseconds <= CONNECTION_EXPIRATION_TIME;
+}
+
+function updateConnectionTimestamp(connectionType) {
+  const currentTime = new Date();
+  switch (connectionType) {
+    case 'sherlock':
+      sherlockConnectionTimestamp = currentTime;
+      break;
+    case 'max':
+      maxConnectionTimestamp = currentTime;
+      break;
+    case 'midas':
+      midasConnectionTimestamp = currentTime;
+      break;
+    // Add cases for other connections if necessary
   }
 }
 
